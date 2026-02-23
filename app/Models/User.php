@@ -2,47 +2,110 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
+use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable
+class User extends Authenticatable implements JWTSubject
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasUuids, HasRoles;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
-        'name',
+        'full_name',
         'email',
+        'phone',
         'password',
+        'encryption_salt',
+        'role',
+        'is_active',
+        'is_verified',
+        'last_login_at',
+        'last_login_ip',
+        'failed_login_count',
+        'locked_until',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
+        'encryption_salt',
+        'failed_login_count',
+        'locked_until',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'last_login_at'     => 'datetime',
+            'locked_until'      => 'datetime',
+            'is_active'         => 'boolean',
+            'is_verified'       => 'boolean',
+            'password'          => 'hashed',
         ];
+    }
+
+    // ── JWT ───────────────────────────────────────────────────────────────────
+
+    public function getJWTIdentifier(): mixed
+    {
+        return $this->getKey();
+    }
+
+    public function getJWTCustomClaims(): array
+    {
+        return [
+            'email' => $this->email,
+            'name'  => $this->full_name,
+            'role'  => $this->role,
+        ];
+    }
+
+    // ── Relationships ─────────────────────────────────────────────────────────
+
+    public function connectedAccounts(): HasMany
+    {
+        return $this->hasMany(ConnectedAccount::class);
+    }
+
+    public function savedContacts(): HasMany
+    {
+        return $this->hasMany(SavedContact::class);
+    }
+
+    public function rules(): HasMany
+    {
+        return $this->hasMany(Rule::class);
+    }
+
+    public function ruleExecutions(): HasMany
+    {
+        return $this->hasMany(RuleExecution::class);
+    }
+
+    public function ledgerEntries(): HasMany
+    {
+        return $this->hasMany(LedgerEntry::class);
+    }
+
+    public function refreshTokens(): HasMany
+    {
+        return $this->hasMany(RefreshToken::class);
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    public function isLocked(): bool
+    {
+        return $this->locked_until !== null && $this->locked_until->isFuture();
+    }
+
+    public function primaryAccount(): ?ConnectedAccount
+    {
+        return $this->connectedAccounts()->where('is_primary', true)->first();
     }
 }
