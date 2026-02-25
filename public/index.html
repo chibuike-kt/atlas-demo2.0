@@ -1,0 +1,1464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Atlas — Your Money, Your Rules</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F7F8FA;
+  --surface:#FFFFFF;
+  --surface2:#F0F2F5;
+  --border:#E4E7EC;
+  --border2:#D0D5DD;
+  --text:#101828;
+  --text2:#475467;
+  --text3:#98A2B3;
+  --accent:#0F6FDE;
+  --accent-light:#EBF3FF;
+  --accent-dark:#0A52A8;
+  --green:#027A48;
+  --green-bg:#ECFDF3;
+  --red:#B42318;
+  --red-bg:#FEF3F2;
+  --orange:#B54708;
+  --orange-bg:#FFFAEB;
+  --purple:#5925DC;
+  --purple-bg:#F4F3FF;
+  --radius:10px;
+  --radius-lg:14px;
+  --shadow:0 1px 3px rgba(16,24,40,.08),0 1px 2px rgba(16,24,40,.06);
+  --shadow-md:0 4px 8px -2px rgba(16,24,40,.1),0 2px 4px -2px rgba(16,24,40,.06);
+  --shadow-lg:0 12px 24px -4px rgba(16,24,40,.12),0 4px 8px -2px rgba(16,24,40,.06);
+  --font:'DM Sans',sans-serif;
+  --mono:'DM Mono',monospace;
+}
+html{font-size:15px}
+body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.5;min-height:100vh}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px}
+
+/* ── Auth Screen ── */
+#auth-screen{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#EBF3FF 0%,#F7F8FA 50%,#F0F2F5 100%);
+  padding:24px;
+}
+.auth-card{
+  background:var(--surface);border-radius:20px;padding:48px 40px;
+  width:100%;max-width:420px;box-shadow:var(--shadow-lg);
+  border:1px solid var(--border);
+}
+.auth-logo{display:flex;align-items:center;gap:10px;margin-bottom:32px}
+.auth-logo-mark{
+  width:40px;height:40px;background:var(--accent);border-radius:10px;
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:700;
+  font-family:var(--mono);
+}
+.auth-logo-name{font-size:22px;font-weight:600;letter-spacing:-0.3px}
+.auth-tagline{color:var(--text2);font-size:13px;margin-bottom:32px}
+.auth-tagline strong{color:var(--text)}
+.form-group{margin-bottom:18px}
+.form-label{display:block;font-size:13px;font-weight:500;color:var(--text2);margin-bottom:6px}
+.form-input{
+  width:100%;padding:10px 14px;border:1.5px solid var(--border2);border-radius:var(--radius);
+  font-family:var(--font);font-size:14px;color:var(--text);background:var(--surface);
+  transition:border-color .15s,box-shadow .15s;outline:none;
+}
+.form-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(15,111,222,.1)}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:10px 18px;border-radius:var(--radius);font-family:var(--font);font-size:14px;
+  font-weight:500;cursor:pointer;border:none;transition:all .15s;text-decoration:none;
+}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent-dark)}
+.btn-secondary{background:var(--surface);color:var(--text);border:1.5px solid var(--border2)}
+.btn-secondary:hover{background:var(--bg);border-color:var(--border2)}
+.btn-ghost{background:transparent;color:var(--text2)}
+.btn-ghost:hover{background:var(--surface2);color:var(--text)}
+.btn-danger{background:var(--red-bg);color:var(--red)}
+.btn-danger:hover{background:#FEE4E2}
+.btn-success{background:var(--green-bg);color:var(--green)}
+.btn-full{width:100%}
+.btn-sm{padding:7px 14px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.auth-hint{
+  margin-top:20px;padding:14px;background:var(--accent-light);border-radius:var(--radius);
+  font-size:12.5px;color:var(--accent);border:1px solid rgba(15,111,222,.15);
+}
+.auth-hint code{font-family:var(--mono);font-size:12px}
+.auth-error{
+  padding:12px 14px;background:var(--red-bg);border-radius:var(--radius);
+  font-size:13px;color:var(--red);margin-bottom:16px;display:none;border:1px solid #FDA29B;
+}
+
+/* ── App Layout ── */
+#app{display:none;min-height:100vh;flex-direction:column}
+.topbar{
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;
+}
+.topbar-left{display:flex;align-items:center;gap:32px}
+.logo{display:flex;align-items:center;gap:9px;text-decoration:none;color:var(--text)}
+.logo-mark{
+  width:32px;height:32px;background:var(--accent);border-radius:8px;
+  display:flex;align-items:center;justify-content:center;color:#fff;
+  font-size:14px;font-weight:700;font-family:var(--mono);
+}
+.logo-name{font-size:17px;font-weight:600;letter-spacing:-0.3px}
+.nav{display:flex;align-items:center;gap:2px}
+.nav-item{
+  padding:6px 14px;border-radius:8px;font-size:13.5px;font-weight:500;color:var(--text2);
+  cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:7px;
+}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:var(--accent-light);color:var(--accent)}
+.nav-item i{width:16px;height:16px}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.user-chip{
+  display:flex;align-items:center;gap:8px;padding:5px 12px 5px 5px;
+  background:var(--surface2);border-radius:99px;cursor:pointer;
+  transition:background .15s;
+}
+.user-chip:hover{background:var(--border)}
+.user-avatar{
+  width:28px;height:28px;background:var(--accent);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:600;
+}
+.user-name{font-size:13px;font-weight:500}
+
+/* ── Page Container ── */
+.page{display:none;padding:32px 24px;max-width:1100px;margin:0 auto;width:100%}
+.page.active{display:block}
+.page-header{margin-bottom:28px}
+.page-title{font-size:22px;font-weight:600;letter-spacing:-0.3px;color:var(--text)}
+.page-sub{font-size:14px;color:var(--text2);margin-top:3px}
+
+/* ── Cards ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;box-shadow:var(--shadow)}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.card-title{font-size:14px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px}
+
+/* ── Stat Cards ── */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;box-shadow:var(--shadow)}
+.stat-label{font-size:12.5px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.stat-value{font-size:26px;font-weight:600;letter-spacing:-1px;color:var(--text);line-height:1}
+.stat-sub{font-size:12px;color:var(--text3);margin-top:6px}
+.stat-icon{
+  width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;
+}
+.stat-icon.blue{background:var(--accent-light);color:var(--accent)}
+.stat-icon.green{background:var(--green-bg);color:var(--green)}
+.stat-icon.purple{background:var(--purple-bg);color:var(--purple)}
+.stat-icon.orange{background:var(--orange-bg);color:var(--orange)}
+
+/* ── Grid layouts ── */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+
+/* ── Account Cards ── */
+.account-card{
+  background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-lg);
+  padding:20px;cursor:pointer;transition:all .15s;
+}
+.account-card:hover{border-color:var(--accent);box-shadow:var(--shadow-md)}
+.account-card.primary{border-color:var(--accent);background:linear-gradient(135deg,#EBF3FF,#fff)}
+.account-bank{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.bank-logo{
+  width:36px;height:36px;background:var(--surface2);border-radius:8px;
+  display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;
+  color:var(--text2);
+}
+.account-balance{font-size:24px;font-weight:600;letter-spacing:-0.5px;color:var(--text)}
+.account-number{font-family:var(--mono);font-size:12px;color:var(--text3);margin-top:4px}
+.account-meta{display:flex;align-items:center;justify-content:space-between;margin-top:12px}
+.account-type{font-size:11.5px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.5px}
+.badge{
+  padding:2px 8px;border-radius:99px;font-size:11.5px;font-weight:500;
+}
+.badge-green{background:var(--green-bg);color:var(--green)}
+.badge-blue{background:var(--accent-light);color:var(--accent)}
+.badge-orange{background:var(--orange-bg);color:var(--orange)}
+.badge-red{background:var(--red-bg);color:var(--red)}
+.badge-purple{background:var(--purple-bg);color:var(--purple)}
+.badge-gray{background:var(--surface2);color:var(--text2)}
+
+/* ── Rule Cards ── */
+.rule-card{
+  background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-lg);
+  padding:20px;transition:all .15s;
+}
+.rule-card:hover{border-color:var(--border2);box-shadow:var(--shadow-md)}
+.rule-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+.rule-name{font-size:15px;font-weight:600;color:var(--text)}
+.rule-desc{font-size:13px;color:var(--text2);margin-top:2px}
+.rule-trigger{
+  display:inline-flex;align-items:center;gap:6px;padding:4px 10px;
+  background:var(--surface2);border-radius:99px;font-size:12px;color:var(--text2);margin-bottom:12px;
+}
+.rule-actions-list{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.rule-action-item{
+  display:flex;align-items:center;gap:8px;padding:8px 12px;
+  background:var(--bg);border-radius:8px;font-size:13px;
+}
+.step-dot{
+  width:20px;height:20px;border-radius:50%;background:var(--accent-light);
+  display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;
+  color:var(--accent);flex-shrink:0;
+}
+.rule-footer{display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:1px solid var(--border)}
+.rule-stats{display:flex;align-items:center;gap:16px}
+.rule-stat{font-size:12px;color:var(--text3);display:flex;align-items:center;gap:4px}
+.rule-actions{display:flex;align-items:center;gap:8px}
+
+/* ── Toggle ── */
+.toggle{position:relative;width:40px;height:22px;cursor:pointer}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-track{
+  position:absolute;top:0;left:0;right:0;bottom:0;
+  background:var(--border2);border-radius:99px;transition:background .2s;
+}
+.toggle input:checked+.toggle-track{background:var(--accent)}
+.toggle-thumb{
+  position:absolute;top:3px;left:3px;width:16px;height:16px;
+  background:#fff;border-radius:50%;transition:transform .2s;
+  box-shadow:0 1px 3px rgba(0,0,0,.2);
+}
+.toggle input:checked~.toggle-thumb{transform:translateX(18px)}
+
+/* ── Execution Pipeline ── */
+.pipeline{display:flex;flex-direction:column;gap:0}
+.pipeline-step{
+  display:flex;gap:16px;position:relative;
+}
+.pipeline-step:not(:last-child)::before{
+  content:'';position:absolute;left:15px;top:32px;bottom:-8px;
+  width:2px;background:var(--border);z-index:0;
+}
+.pipeline-step.completed::before{background:var(--green)}
+.step-icon-wrap{
+  width:32px;height:32px;border-radius:50%;border:2px solid var(--border);
+  background:var(--surface);display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;position:relative;z-index:1;transition:all .3s;
+}
+.pipeline-step.completed .step-icon-wrap{border-color:var(--green);background:var(--green-bg);color:var(--green)}
+.pipeline-step.running .step-icon-wrap{border-color:var(--accent);background:var(--accent-light);color:var(--accent)}
+.pipeline-step.failed .step-icon-wrap{border-color:var(--red);background:var(--red-bg);color:var(--red)}
+.step-body{padding:0 0 24px 0;flex:1}
+.step-label{font-size:14px;font-weight:500;color:var(--text);margin-bottom:4px}
+.step-amount{font-size:13px;font-weight:600;color:var(--text2)}
+.step-ref{font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:4px}
+.step-detail{
+  margin-top:8px;padding:10px 12px;background:var(--bg);border-radius:8px;
+  font-size:12.5px;color:var(--text2);
+}
+.step-detail-row{display:flex;justify-content:space-between;padding:2px 0}
+.step-detail-key{color:var(--text3)}
+.step-detail-val{font-family:var(--mono);font-size:12px;color:var(--text)}
+
+/* ── Ledger ── */
+.ledger-table{width:100%;border-collapse:collapse}
+.ledger-table th{
+  text-align:left;padding:10px 14px;font-size:11.5px;font-weight:600;
+  color:var(--text3);text-transform:uppercase;letter-spacing:.5px;
+  border-bottom:1px solid var(--border);background:var(--bg);
+}
+.ledger-table td{padding:12px 14px;font-size:13.5px;border-bottom:1px solid var(--border)}
+.ledger-table tr:last-child td{border-bottom:none}
+.ledger-table tr:hover td{background:var(--bg)}
+.amount-debit{color:var(--red);font-weight:500;font-family:var(--mono)}
+.amount-credit{color:var(--green);font-weight:500;font-family:var(--mono)}
+.ref-code{font-family:var(--mono);font-size:11.5px;color:var(--text3)}
+
+/* ── Contact Cards ── */
+.contact-card{
+  display:flex;align-items:center;gap:14px;padding:14px 16px;
+  background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-lg);
+  transition:all .15s;
+}
+.contact-card:hover{border-color:var(--border2);box-shadow:var(--shadow)}
+.contact-avatar{
+  width:40px;height:40px;border-radius:50%;background:var(--accent-light);
+  display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;
+  color:var(--accent);flex-shrink:0;
+}
+.contact-info{flex:1}
+.contact-label{font-size:14px;font-weight:600;color:var(--text)}
+.contact-bank{font-size:12.5px;color:var(--text2);margin-top:1px}
+.contact-num{font-family:var(--mono);font-size:12px;color:var(--text3)}
+
+/* ── Modal ── */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(16,24,40,.5);
+  display:flex;align-items:center;justify-content:center;z-index:1000;
+  padding:24px;opacity:0;pointer-events:none;transition:opacity .2s;
+}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{
+  background:var(--surface);border-radius:16px;padding:28px;width:100%;max-width:540px;
+  max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg);
+  transform:translateY(8px);transition:transform .2s;
+}
+.modal-overlay.open .modal{transform:translateY(0)}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.modal-title{font-size:17px;font-weight:600;letter-spacing:-0.3px}
+.modal-close{
+  width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--text3);transition:all .15s;background:transparent;border:none;
+}
+.modal-close:hover{background:var(--surface2);color:var(--text)}
+.action-builder{display:flex;flex-direction:column;gap:10px}
+.action-item-builder{
+  border:1.5px solid var(--border);border-radius:var(--radius);padding:14px;
+  background:var(--bg);
+}
+.action-item-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.action-step-num{
+  width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;
+  font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;font-family:var(--mono);
+}
+.add-action-btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:12px;border:2px dashed var(--border2);border-radius:var(--radius);
+  font-size:13.5px;color:var(--text3);cursor:pointer;transition:all .15s;background:transparent;width:100%;
+}
+.add-action-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-select{
+  width:100%;padding:10px 14px;border:1.5px solid var(--border2);border-radius:var(--radius);
+  font-family:var(--font);font-size:14px;color:var(--text);background:var(--surface);
+  transition:border-color .15s;outline:none;cursor:pointer;
+}
+.form-select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(15,111,222,.1)}
+.divider{height:1px;background:var(--border);margin:20px 0}
+
+/* ── Device contacts picker ── */
+.device-contact-item{
+  display:flex;align-items:center;gap:12px;padding:10px 14px;
+  border-radius:var(--radius);cursor:pointer;transition:background .15s;
+}
+.device-contact-item:hover{background:var(--accent-light)}
+.device-avatar{
+  width:36px;height:36px;border-radius:50%;background:var(--surface2);
+  display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--text2);
+}
+
+/* ── Toast ── */
+.toast-container{position:fixed;bottom:24px;right:24px;display:flex;flex-direction:column;gap:8px;z-index:2000}
+.toast{
+  padding:12px 16px;border-radius:var(--radius);font-size:13.5px;font-weight:500;
+  box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:10px;
+  animation:slideIn .2s ease;max-width:320px;
+}
+.toast.success{background:#fff;color:var(--green);border:1px solid #A9EFC5}
+.toast.error{background:#fff;color:var(--red);border:1px solid #FDA29B}
+.toast.info{background:#fff;color:var(--accent);border:1px solid #84CAFF}
+@keyframes slideIn{from{transform:translateX(20px);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* ── Loading ── */
+.spinner{
+  width:18px;height:18px;border:2.5px solid rgba(255,255,255,.3);
+  border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;
+}
+.spinner.dark{border-color:rgba(15,111,222,.2);border-top-color:var(--accent)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.skeleton{background:linear-gradient(90deg,var(--surface2) 25%,var(--border) 50%,var(--surface2) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:6px;height:14px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* ── Empty state ── */
+.empty{text-align:center;padding:48px 24px;color:var(--text3)}
+.empty-icon{margin:0 auto 12px;width:48px;height:48px;background:var(--surface2);border-radius:12px;display:flex;align-items:center;justify-content:center}
+.empty-title{font-size:15px;font-weight:600;color:var(--text2);margin-bottom:4px}
+.empty-sub{font-size:13px}
+
+/* ── Execution result ── */
+.exec-result{
+  margin-top:20px;border:1.5px solid var(--border);border-radius:var(--radius-lg);
+  overflow:hidden;animation:fadeUp .3s ease;
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.exec-result-header{
+  padding:14px 20px;background:var(--bg);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.exec-result-body{padding:20px}
+
+/* ── Responsive ── */
+@media(max-width:768px){
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .grid-2,.grid-3{grid-template-columns:1fr}
+  .nav-item span{display:none}
+  .topbar{padding:0 16px}
+  .page{padding:20px 16px}
+}
+</style>
+</head>
+<body>
+
+<!-- ── Auth Screen ── -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-logo-mark">A</div>
+      <div class="auth-logo-name">Atlas</div>
+    </div>
+    <p style="font-size:20px;font-weight:600;letter-spacing:-0.3px;margin-bottom:4px">Welcome back</p>
+    <p class="auth-tagline">Your money, <strong>your rules.</strong> Automated.</p>
+    <div class="auth-error" id="auth-error"></div>
+    <div class="form-group">
+      <label class="form-label">Email address</label>
+      <input type="email" class="form-input" id="login-email" placeholder="you@example.com" value="demo@atlas.io"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input type="password" class="form-input" id="login-password" placeholder="••••••••" value="demo1234"/>
+    </div>
+    <button class="btn btn-primary btn-full" id="login-btn" onclick="login()">
+      <span id="login-btn-text">Sign in</span>
+    </button>
+    <div class="auth-hint">
+      <strong>Demo credentials</strong><br/>
+      Email: <code>demo@atlas.io</code> &nbsp;·&nbsp; Password: <code>demo1234</code>
+    </div>
+  </div>
+</div>
+
+<!-- ── App ── -->
+<div id="app">
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <a class="logo" href="#">
+        <div class="logo-mark">A</div>
+        <div class="logo-name">Atlas</div>
+      </a>
+      <nav class="nav">
+        <div class="nav-item active" onclick="showPage('dashboard')" data-page="dashboard">
+          <i data-lucide="layout-dashboard"></i><span>Dashboard</span>
+        </div>
+        <div class="nav-item" onclick="showPage('rules')" data-page="rules">
+          <i data-lucide="git-branch"></i><span>Rules</span>
+        </div>
+        <div class="nav-item" onclick="showPage('accounts')" data-page="accounts">
+          <i data-lucide="landmark"></i><span>Accounts</span>
+        </div>
+        <div class="nav-item" onclick="showPage('contacts')" data-page="contacts">
+          <i data-lucide="users"></i><span>Contacts</span>
+        </div>
+        <div class="nav-item" onclick="showPage('ledger')" data-page="ledger">
+          <i data-lucide="receipt"></i><span>Ledger</span>
+        </div>
+      </nav>
+    </div>
+    <div class="topbar-right">
+      <div class="user-chip" onclick="logout()">
+        <div class="user-avatar" id="user-avatar">E</div>
+        <span class="user-name" id="user-name">Emeka</span>
+        <i data-lucide="log-out" style="width:14px;height:14px;color:var(--text3)"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pages -->
+  <div style="flex:1">
+
+    <!-- Dashboard -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <div class="page-title" id="dash-greeting">Good morning, Emeka</div>
+        <div class="page-sub">Here's your financial overview</div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon blue"><i data-lucide="wallet" style="width:18px;height:18px"></i></div>
+          <div class="stat-label">Total Balance</div>
+          <div class="stat-value" id="stat-balance">—</div>
+          <div class="stat-sub" id="stat-accounts">— accounts</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green"><i data-lucide="trending-up" style="width:18px;height:18px"></i></div>
+          <div class="stat-label">Total Moved</div>
+          <div class="stat-value" id="stat-moved">—</div>
+          <div class="stat-sub" id="stat-executions">— executions</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon purple"><i data-lucide="git-branch" style="width:18px;height:18px"></i></div>
+          <div class="stat-label">Active Rules</div>
+          <div class="stat-value" id="stat-rules">—</div>
+          <div class="stat-sub" id="stat-rules-sub">of — total</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon orange"><i data-lucide="users" style="width:18px;height:18px"></i></div>
+          <div class="stat-label">Saved Contacts</div>
+          <div class="stat-value" id="stat-contacts">—</div>
+          <div class="stat-sub">Quick send recipients</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Recent Activity</div>
+            <button class="btn btn-ghost btn-sm" onclick="showPage('ledger')">View all</button>
+          </div>
+          <div id="dash-ledger">
+            <div class="skeleton" style="margin-bottom:10px"></div>
+            <div class="skeleton" style="margin-bottom:10px;width:80%"></div>
+            <div class="skeleton" style="width:60%"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Recent Executions</div>
+            <button class="btn btn-ghost btn-sm" onclick="showPage('rules')">Run rule</button>
+          </div>
+          <div id="dash-executions">
+            <div class="skeleton" style="margin-bottom:10px"></div>
+            <div class="skeleton" style="width:70%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rules -->
+    <div class="page" id="page-rules">
+      <div class="page-header" style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div class="page-title">Rules</div>
+          <div class="page-sub">Automate your money movement</div>
+        </div>
+        <button class="btn btn-primary" onclick="openRuleBuilder()">
+          <i data-lucide="plus" style="width:16px;height:16px"></i> New Rule
+        </button>
+      </div>
+      <div id="rules-list" class="grid-2"></div>
+    </div>
+
+    <!-- Accounts -->
+    <div class="page" id="page-accounts">
+      <div class="page-header">
+        <div class="page-title">Connected Accounts</div>
+        <div class="page-sub">Your linked Nigerian bank accounts</div>
+      </div>
+      <div id="accounts-grid" class="grid-3"></div>
+    </div>
+
+    <!-- Contacts -->
+    <div class="page" id="page-contacts">
+      <div class="page-header" style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div class="page-title">Saved Contacts</div>
+          <div class="page-sub">People you send money to regularly</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-secondary btn-sm" onclick="openDevicePicker()">
+            <i data-lucide="smartphone" style="width:14px;height:14px"></i> From Phone
+          </button>
+          <button class="btn btn-primary btn-sm" onclick="openAddContact()">
+            <i data-lucide="plus" style="width:14px;height:14px"></i> Add Contact
+          </button>
+        </div>
+      </div>
+      <div id="contacts-grid" class="grid-3"></div>
+    </div>
+
+    <!-- Ledger -->
+    <div class="page" id="page-ledger">
+      <div class="page-header">
+        <div class="page-title">Transaction Ledger</div>
+        <div class="page-sub">Every naira in and out, double-entry recorded</div>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <table class="ledger-table" id="ledger-table">
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Description</th>
+              <th>Amount</th>
+              <th>Currency</th>
+              <th>Reference</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody id="ledger-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── Rule Builder Modal ── -->
+<div class="modal-overlay" id="rule-builder-modal">
+  <div class="modal" style="max-width:620px">
+    <div class="modal-header">
+      <div class="modal-title">Build a Rule</div>
+      <button class="modal-close" onclick="closeModal('rule-builder-modal')">
+        <i data-lucide="x" style="width:16px;height:16px"></i>
+      </button>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Rule name</label>
+      <input type="text" class="form-input" id="rule-name" placeholder="e.g. Salary Day Split"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Source account</label>
+      <select class="form-select" id="rule-account"></select>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Trigger</label>
+        <select class="form-select" id="rule-trigger">
+          <option value="manual">Manual</option>
+          <option value="schedule">Monthly schedule</option>
+          <option value="deposit">On deposit</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Amount to debit (₦)</label>
+        <input type="number" class="form-input" id="rule-amount" placeholder="1000000"/>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px">Actions — in order</div>
+
+    <div class="action-builder" id="action-builder"></div>
+    <button class="add-action-btn" onclick="addAction()" style="margin-top:10px">
+      <i data-lucide="plus" style="width:16px;height:16px"></i> Add Action
+    </button>
+
+    <div id="rule-exec-result"></div>
+
+    <div style="display:flex;gap:10px;margin-top:24px">
+      <button class="btn btn-secondary" style="flex:1" onclick="closeModal('rule-builder-modal')">Cancel</button>
+      <button class="btn btn-primary" style="flex:2" id="save-rule-btn" onclick="saveRule()">
+        <i data-lucide="save" style="width:15px;height:15px"></i> Save Rule
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Execution Result Modal ── -->
+<div class="modal-overlay" id="exec-modal">
+  <div class="modal" style="max-width:580px">
+    <div class="modal-header">
+      <div class="modal-title">Execution Pipeline</div>
+      <button class="modal-close" onclick="closeModal('exec-modal')">
+        <i data-lucide="x" style="width:16px;height:16px"></i>
+      </button>
+    </div>
+    <div id="exec-modal-content"></div>
+  </div>
+</div>
+
+<!-- ── Add Contact Modal ── -->
+<div class="modal-overlay" id="contact-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="contact-modal-title">Add Contact</div>
+      <button class="modal-close" onclick="closeModal('contact-modal')">
+        <i data-lucide="x" style="width:16px;height:16px"></i>
+      </button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Label (how you know them)</label>
+      <input type="text" class="form-input" id="contact-label" placeholder="e.g. Mama, Wife, Landlord"/>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Account name</label>
+        <input type="text" class="form-input" id="contact-account-name" placeholder="Full name"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Account number</label>
+        <input type="text" class="form-input" id="contact-account-number" placeholder="0123456789" maxlength="10"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Bank</label>
+      <select class="form-select" id="contact-bank-select"></select>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:20px">
+      <button class="btn btn-secondary" style="flex:1" onclick="closeModal('contact-modal')">Cancel</button>
+      <button class="btn btn-primary" style="flex:2" onclick="saveContact()">Save Contact</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Device Contacts Modal ── -->
+<div class="modal-overlay" id="device-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Phone Contacts</div>
+      <button class="modal-close" onclick="closeModal('device-modal')">
+        <i data-lucide="x" style="width:16px;height:16px"></i>
+      </button>
+    </div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:16px">Select a contact to add their bank details</p>
+    <div id="device-contacts-list"></div>
+  </div>
+</div>
+
+<!-- ── Toast Container ── -->
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+const API = '/api';
+let token = localStorage.getItem('atlas_token') || '';
+let userData = JSON.parse(localStorage.getItem('atlas_user') || '{}');
+let accounts = [];
+let contacts = [];
+let ruleActions = [];
+let banks = [];
+
+// ── API Helper ────────────────────────────────────────────────────────────
+async function api(method, path, body = null) {
+  const opts = {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      ...(token ? {'Authorization': `Bearer ${token}`} : {})
+    }
+  };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(API + path, opts);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'Request failed');
+  return data;
+}
+
+// ── Auth ──────────────────────────────────────────────────────────────────
+async function login() {
+  const btn = document.getElementById('login-btn');
+  const errEl = document.getElementById('auth-error');
+  const email = document.getElementById('login-email').value;
+  const pass = document.getElementById('login-password').value;
+
+  btn.innerHTML = '<div class="spinner"></div>';
+  btn.disabled = true;
+  errEl.style.display = 'none';
+
+  try {
+    const res = await api('POST', '/auth/login', { email, password: pass });
+    token = res.data.access_token;
+    userData = res.data.user;
+    localStorage.setItem('atlas_token', token);
+    localStorage.setItem('atlas_user', JSON.stringify(userData));
+    initApp();
+  } catch (e) {
+    errEl.textContent = e.message;
+    errEl.style.display = 'block';
+    btn.innerHTML = '<span id="login-btn-text">Sign in</span>';
+    btn.disabled = false;
+  }
+}
+
+function logout() {
+  localStorage.removeItem('atlas_token');
+  localStorage.removeItem('atlas_user');
+  token = '';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('auth-screen').style.display = 'flex';
+}
+
+document.getElementById('login-password').addEventListener('keydown', e => {
+  if (e.key === 'Enter') login();
+});
+
+// ── App Init ──────────────────────────────────────────────────────────────
+async function initApp() {
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+
+  const name = userData.name || 'User';
+  const first = name.split(' ')[0];
+  document.getElementById('user-name').textContent = first;
+  document.getElementById('user-avatar').textContent = first[0].toUpperCase();
+
+  const hour = new Date().getHours();
+  const greet = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  document.getElementById('dash-greeting').textContent = `${greet}, ${first}`;
+
+  lucide.createIcons();
+  await loadDashboard();
+  await loadBanks();
+}
+
+// ── Dashboard ─────────────────────────────────────────────────────────────
+async function loadDashboard() {
+  try {
+    const res = await api('GET', '/dashboard');
+    const d = res.data;
+
+    document.getElementById('stat-balance').textContent = d.summary.total_balance;
+    document.getElementById('stat-accounts').textContent = `${d.accounts.length} account${d.accounts.length !== 1 ? 's' : ''}`;
+    document.getElementById('stat-moved').textContent = d.summary.total_moved;
+    document.getElementById('stat-executions').textContent = `${d.summary.successful_executions} successful`;
+    document.getElementById('stat-rules').textContent = d.summary.active_rules;
+    document.getElementById('stat-rules-sub').textContent = `of ${d.summary.total_rules} total`;
+    document.getElementById('stat-contacts').textContent = d.summary.contacts_count;
+
+    accounts = d.accounts;
+
+    // Recent ledger
+    const ledgerEl = document.getElementById('dash-ledger');
+    if (d.ledger.length === 0) {
+      ledgerEl.innerHTML = '<div class="empty" style="padding:24px"><div class="empty-sub">No transactions yet</div></div>';
+    } else {
+      ledgerEl.innerHTML = d.ledger.slice(0,5).map(e => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)">
+          <div>
+            <div style="font-size:13.5px;color:var(--text)">${e.description}</div>
+            <div style="font-size:11.5px;color:var(--text3);margin-top:2px">${formatDate(e.date)}</div>
+          </div>
+          <div class="${e.type === 'credit' ? 'amount-credit' : 'amount-debit'}" style="font-size:13.5px">${e.amount}</div>
+        </div>
+      `).join('');
+    }
+
+    // Recent executions
+    const execEl = document.getElementById('dash-executions');
+    if (d.recent_executions.length === 0) {
+      execEl.innerHTML = '<div class="empty" style="padding:24px"><div class="empty-sub">No executions yet. Run a rule!</div></div>';
+    } else {
+      execEl.innerHTML = d.recent_executions.map(e => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)">
+          <div>
+            <div style="font-size:13.5px;font-weight:500;color:var(--text)">${e.rule_name}</div>
+            <div style="font-size:12px;color:var(--text3);margin-top:2px">${e.steps_count} steps · ${formatDate(e.executed_at)}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="font-size:13px;font-weight:600;color:var(--text)">${e.total_amount}</div>
+            <span class="badge ${e.status === 'completed' ? 'badge-green' : 'badge-red'}">${e.status}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    lucide.createIcons();
+  } catch(e) {
+    toast('Failed to load dashboard', 'error');
+  }
+}
+
+// ── Rules ─────────────────────────────────────────────────────────────────
+async function loadRules() {
+  try {
+    const res = await api('GET', '/rules');
+    const container = document.getElementById('rules-list');
+
+    if (res.data.length === 0) {
+      container.innerHTML = `<div class="empty" style="grid-column:1/-1;padding:64px">
+        <div class="empty-icon"><i data-lucide="git-branch" style="width:24px;height:24px;color:var(--text3)"></i></div>
+        <div class="empty-title">No rules yet</div>
+        <div class="empty-sub">Create your first automation rule</div>
+        <button class="btn btn-primary btn-sm" style="margin-top:16px" onclick="openRuleBuilder()">Create Rule</button>
+      </div>`;
+      lucide.createIcons();
+      return;
+    }
+
+    container.innerHTML = res.data.map(r => `
+      <div class="rule-card">
+        <div class="rule-header">
+          <div>
+            <div class="rule-name">${r.name}</div>
+            <div class="rule-desc">${r.description || ''}</div>
+          </div>
+          <label class="toggle" title="${r.is_active ? 'Deactivate' : 'Activate'}">
+            <input type="checkbox" ${r.is_active ? 'checked' : ''} onchange="toggleRule('${r.id}', this)"/>
+            <div class="toggle-track"></div>
+            <div class="toggle-thumb"></div>
+          </label>
+        </div>
+        <div class="rule-trigger">
+          <i data-lucide="clock" style="width:12px;height:12px"></i>
+          ${r.trigger.label}
+        </div>
+        <div class="rule-actions-list">
+          ${r.actions.map(a => `
+            <div class="rule-action-item">
+              <div class="step-dot">${a.step}</div>
+              <div style="flex:1;font-size:13px">${a.label || a.type}</div>
+              <div style="font-size:12px;font-weight:600;color:var(--text2)">${formatActionAmount(a)}</div>
+            </div>
+          `).join('')}
+        </div>
+        <div class="rule-footer">
+          <div class="rule-stats">
+            <div class="rule-stat">
+              <i data-lucide="play" style="width:12px;height:12px"></i>
+              ${r.execution_count} runs
+            </div>
+            <div class="rule-stat">
+              <i data-lucide="landmark" style="width:12px;height:12px"></i>
+              ${r.source_account?.institution || '—'}
+            </div>
+          </div>
+          <div class="rule-actions">
+            <button class="btn btn-success btn-sm" onclick="executeRule('${r.id}', '${r.name}')">
+              <i data-lucide="play" style="width:13px;height:13px"></i> Execute
+            </button>
+            <button class="btn btn-danger btn-sm" onclick="deleteRule('${r.id}')">
+              <i data-lucide="trash-2" style="width:13px;height:13px"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+    lucide.createIcons();
+  } catch(e) {
+    toast('Failed to load rules', 'error');
+  }
+}
+
+async function executeRule(id, name) {
+  toast(`Executing "${name}"...`, 'info');
+  try {
+    const res = await api('POST', `/rules/${id}/execute`);
+    showExecutionModal(res.data);
+    await loadDashboard();
+    await loadRules();
+    toast('Rule executed successfully', 'success');
+  } catch(e) {
+    toast(e.message, 'error');
+  }
+}
+
+async function toggleRule(id, checkbox) {
+  try {
+    await api('POST', `/rules/${id}/toggle`);
+    toast(checkbox.checked ? 'Rule activated' : 'Rule deactivated', 'success');
+  } catch(e) {
+    checkbox.checked = !checkbox.checked;
+    toast(e.message, 'error');
+  }
+}
+
+async function deleteRule(id) {
+  if (!confirm('Delete this rule?')) return;
+  try {
+    await api('DELETE', `/rules/${id}`);
+    toast('Rule deleted', 'success');
+    loadRules();
+  } catch(e) {
+    toast(e.message, 'error');
+  }
+}
+
+function formatActionAmount(a) {
+  if (a.amount_type === 'percentage') return `${parseFloat(a.amount)}%`;
+  return '₦' + Number(a.amount).toLocaleString();
+}
+
+// ── Rule Builder ──────────────────────────────────────────────────────────
+function openRuleBuilder() {
+  ruleActions = [];
+  document.getElementById('rule-name').value = '';
+  document.getElementById('rule-amount').value = '';
+  document.getElementById('rule-exec-result').innerHTML = '';
+
+  const sel = document.getElementById('rule-account');
+  sel.innerHTML = accounts.map(a =>
+    `<option value="${a.id}">${a.institution} — ${a.formatted}</option>`
+  ).join('');
+
+  renderActionBuilder();
+  openModal('rule-builder-modal');
+}
+
+function addAction() {
+  ruleActions.push({
+    action_type: 'send_bank',
+    amount_type: 'fixed',
+    amount: '',
+    label: '',
+    config: {}
+  });
+  renderActionBuilder();
+}
+
+function removeAction(i) {
+  ruleActions.splice(i, 1);
+  renderActionBuilder();
+}
+
+function renderActionBuilder() {
+  const container = document.getElementById('action-builder');
+
+  if (ruleActions.length === 0) {
+    container.innerHTML = `<div style="text-align:center;padding:20px;color:var(--text3);font-size:13px">No actions yet. Add your first action below.</div>`;
+    return;
+  }
+
+  container.innerHTML = ruleActions.map((a, i) => `
+    <div class="action-item-builder">
+      <div class="action-item-header">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="action-step-num">${i + 1}</div>
+          <input type="text" class="form-input" style="height:32px;font-size:13px;width:200px"
+            placeholder="Label (e.g. Send to Mom)" value="${a.label}"
+            oninput="ruleActions[${i}].label=this.value"/>
+        </div>
+        <button onclick="removeAction(${i})" style="background:none;border:none;cursor:pointer;color:var(--text3)">
+          <i data-lucide="x" style="width:15px;height:15px"></i>
+        </button>
+      </div>
+      <div class="form-row">
+        <div>
+          <label class="form-label" style="font-size:12px">Action type</label>
+          <select class="form-select" style="font-size:13px" onchange="ruleActions[${i}].action_type=this.value;renderActionBuilder()">
+            <option value="send_bank" ${a.action_type==='send_bank'?'selected':''}>Bank Transfer</option>
+            <option value="save_piggyvest" ${a.action_type==='save_piggyvest'?'selected':''}>Save to PiggyVest</option>
+            <option value="save_cowrywise" ${a.action_type==='save_cowrywise'?'selected':''}>Save to Cowrywise</option>
+            <option value="convert_crypto" ${a.action_type==='convert_crypto'?'selected':''}>Convert to USDT</option>
+            <option value="pay_bill" ${a.action_type==='pay_bill'?'selected':''}>Pay Bill</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label" style="font-size:12px">Amount</label>
+          <div style="display:flex;gap:6px">
+            <select class="form-select" style="font-size:13px;width:90px" onchange="ruleActions[${i}].amount_type=this.value">
+              <option value="fixed" ${a.amount_type==='fixed'?'selected':''}>₦ Fixed</option>
+              <option value="percentage" ${a.amount_type==='percentage'?'selected':''}>% of total</option>
+            </select>
+            <input type="number" class="form-input" style="font-size:13px" placeholder="${a.amount_type==='percentage'?'30':'50000'}"
+              value="${a.amount}" oninput="ruleActions[${i}].amount=this.value"/>
+          </div>
+        </div>
+      </div>
+      ${renderActionConfig(a, i)}
+    </div>
+  `).join('');
+  lucide.createIcons();
+}
+
+function renderActionConfig(a, i) {
+  if (a.action_type === 'send_bank') {
+    return `<div style="margin-top:10px">
+      <label class="form-label" style="font-size:12px">Recipient</label>
+      <select class="form-select" style="font-size:13px" onchange="ruleActions[${i}].config={contact_id:this.value,narration:this.options[this.selectedIndex].dataset.narration||'Atlas transfer'}">
+        <option value="">Select saved contact</option>
+        ${contacts.map(c => `<option value="${c.id}" data-narration="${c.label}">${c.label} — ${c.bank_name}</option>`).join('')}
+      </select>
+    </div>`;
+  }
+  if (a.action_type === 'save_piggyvest') {
+    return `<div style="margin-top:10px">
+      <label class="form-label" style="font-size:12px">Plan name</label>
+      <input type="text" class="form-input" style="font-size:13px" placeholder="e.g. Emergency Fund"
+        oninput="ruleActions[${i}].config={plan:this.value,note:'Atlas auto-save'}"/>
+    </div>`;
+  }
+  if (a.action_type === 'save_cowrywise') {
+    return `<div style="margin-top:10px">
+      <label class="form-label" style="font-size:12px">Plan name</label>
+      <input type="text" class="form-input" style="font-size:13px" placeholder="e.g. Investment Plan"
+        oninput="ruleActions[${i}].config={plan:this.value}"/>
+    </div>`;
+  }
+  if (a.action_type === 'convert_crypto') {
+    return `<div style="margin-top:10px">
+      <label class="form-label" style="font-size:12px">Wallet address</label>
+      <input type="text" class="form-input" style="font-size:13px" placeholder="TRX wallet address"
+        oninput="ruleActions[${i}].config={network:'tron',wallet:this.value}"/>
+    </div>`;
+  }
+  if (a.action_type === 'pay_bill') {
+    return `<div style="margin-top:10px">
+      <div class="form-row">
+        <div>
+          <label class="form-label" style="font-size:12px">Provider</label>
+          <select class="form-select" style="font-size:13px" onchange="ruleActions[${i}].config={...(ruleActions[${i}].config||{}),provider:this.value}">
+            <option value="dstv">DStv</option>
+            <option value="gotv">GOtv</option>
+            <option value="ekedc">EKEDC (Electricity)</option>
+            <option value="ikedc">IKEDC (Electricity)</option>
+            <option value="mtn">MTN Airtime</option>
+            <option value="airtel">Airtel Airtime</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label" style="font-size:12px">Smart card / Meter / Phone</label>
+          <input type="text" class="form-input" style="font-size:13px" placeholder="Account number"
+            oninput="ruleActions[${i}].config={...(ruleActions[${i}].config||{}),smart_card:this.value,meter_number:this.value,phone:this.value}"/>
+        </div>
+      </div>
+    </div>`;
+  }
+  return '';
+}
+
+async function saveRule() {
+  const name    = document.getElementById('rule-name').value.trim();
+  const account = document.getElementById('rule-account').value;
+  const amount  = document.getElementById('rule-amount').value;
+  const trigger = document.getElementById('rule-trigger').value;
+
+  if (!name) return toast('Enter a rule name', 'error');
+  if (!account) return toast('Select a source account', 'error');
+  if (!amount) return toast('Enter the debit amount', 'error');
+  if (ruleActions.length === 0) return toast('Add at least one action', 'error');
+
+  const btn = document.getElementById('save-rule-btn');
+  btn.innerHTML = '<div class="spinner"></div> Saving...';
+  btn.disabled = true;
+
+  // Set default configs for any empty configs
+  ruleActions.forEach(a => {
+    if (!a.config || Object.keys(a.config).length === 0) {
+      if (a.action_type === 'save_piggyvest') a.config = {plan:'Piggybank',note:'Atlas auto-save'};
+      if (a.action_type === 'save_cowrywise') a.config = {plan:'Investment'};
+      if (a.action_type === 'convert_crypto') a.config = {network:'tron',wallet:'TRX_DEMO_WALLET'};
+      if (a.action_type === 'pay_bill') a.config = {provider:'dstv',smart_card:'1234567890',package:'Premium'};
+      if (a.action_type === 'send_bank') a.config = {contact_id:contacts[0]?.id,narration:'Atlas transfer'};
+    }
+  });
+
+  try {
+    await api('POST', '/rules', {
+      name,
+      connected_account_id: account,
+      trigger_type: trigger,
+      trigger_config: trigger === 'schedule' ? {day:25} : {},
+      total_amount_type: 'fixed',
+      total_amount: parseFloat(amount),
+      actions: ruleActions.map((a,i) => ({
+        action_type: a.action_type,
+        amount_type: a.amount_type,
+        amount: parseFloat(a.amount) || 10,
+        label: a.label || a.action_type,
+        config: a.config || {},
+      }))
+    });
+
+    closeModal('rule-builder-modal');
+    toast(`Rule "${name}" created`, 'success');
+    loadRules();
+  } catch(e) {
+    toast(e.message, 'error');
+  }
+
+  btn.innerHTML = '<i data-lucide="save" style="width:15px;height:15px"></i> Save Rule';
+  btn.disabled = false;
+  lucide.createIcons();
+}
+
+// ── Execution Modal ───────────────────────────────────────────────────────
+function showExecutionModal(exec) {
+  const content = document.getElementById('exec-modal-content');
+
+  const statusColor = exec.status === 'completed' ? 'var(--green)' : 'var(--red)';
+  const statusBg = exec.status === 'completed' ? 'var(--green-bg)' : 'var(--red-bg)';
+
+  content.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding:14px 16px;background:${statusBg};border-radius:var(--radius)">
+      <div>
+        <div style="font-size:15px;font-weight:600;color:${statusColor}">${exec.rule.name}</div>
+        <div style="font-size:13px;color:var(--text2);margin-top:2px">Total: ${exec.total_amount} · ${exec.steps.length} steps</div>
+      </div>
+      <span class="badge ${exec.status === 'completed' ? 'badge-green' : 'badge-red'}">${exec.status}</span>
+    </div>
+    <div class="pipeline">
+      ${exec.steps.map(s => renderPipelineStep(s)).join('')}
+    </div>
+  `;
+  lucide.createIcons();
+  openModal('exec-modal');
+}
+
+function renderPipelineStep(step) {
+  const icon = {
+    send_bank: 'send',
+    save_piggyvest: 'piggy-bank',
+    save_cowrywise: 'trending-up',
+    convert_crypto: 'bitcoin',
+    pay_bill: 'zap',
+  }[step.action_type] || 'circle';
+
+  const details = step.result ? Object.entries(step.result)
+    .filter(([k]) => ['recipient','plan','amount_usdt','rate','provider','smart_card','token','units'].some(f => k.includes(f)))
+    .slice(0,4)
+    .map(([k,v]) => {
+      if (typeof v === 'object') return Object.entries(v).map(([k2,v2]) =>
+        `<div class="step-detail-row"><span class="step-detail-key">${k2}</span><span class="step-detail-val">${v2}</span></div>`
+      ).join('');
+      return `<div class="step-detail-row"><span class="step-detail-key">${k}</span><span class="step-detail-val">${v}</span></div>`;
+    }).join('') : '';
+
+  return `
+    <div class="pipeline-step ${step.status}">
+      <div class="step-icon-wrap">
+        <i data-lucide="${icon}" style="width:14px;height:14px"></i>
+      </div>
+      <div class="step-body">
+        <div class="step-label">${step.label || step.action_type}</div>
+        <div class="step-amount">${step.amount}</div>
+        ${step.rail_reference ? `<div class="step-ref">Ref: ${step.rail_reference}</div>` : ''}
+        ${details ? `<div class="step-detail">${details}</div>` : ''}
+      </div>
+    </div>
+  `;
+}
+
+// ── Accounts ──────────────────────────────────────────────────────────────
+async function loadAccounts() {
+  try {
+    const res = await api('GET', '/accounts');
+    accounts = res.data;
+    const grid = document.getElementById('accounts-grid');
+
+    if (accounts.length === 0) {
+      grid.innerHTML = `<div class="empty" style="grid-column:1/-1;padding:64px">
+        <div class="empty-icon"><i data-lucide="landmark" style="width:24px;height:24px;color:var(--text3)"></i></div>
+        <div class="empty-title">No accounts connected</div>
+        <div class="empty-sub">Connect your Nigerian bank account to get started</div>
+      </div>`;
+      lucide.createIcons();
+      return;
+    }
+
+    grid.innerHTML = accounts.map(a => `
+      <div class="account-card ${a.is_primary ? 'primary' : ''}">
+        <div class="account-bank">
+          <div class="bank-logo">${a.institution.substring(0,3).toUpperCase()}</div>
+          ${a.is_primary ? '<span class="badge badge-blue">Primary</span>' : '<span class="badge badge-gray">Secondary</span>'}
+        </div>
+        <div class="account-balance">${a.balance_formatted}</div>
+        <div class="account-number">${a.account_number}</div>
+        <div class="account-meta">
+          <div class="account-type">${a.institution}</div>
+          <span class="badge badge-gray">${a.account_type}</span>
+        </div>
+        <div style="margin-top:12px">
+          <button class="btn btn-secondary btn-sm btn-full" onclick="syncAccount('${a.id}')">
+            <i data-lucide="refresh-cw" style="width:13px;height:13px"></i> Sync Balance
+          </button>
+        </div>
+      </div>
+    `).join('');
+    lucide.createIcons();
+  } catch(e) {
+    toast('Failed to load accounts', 'error');
+  }
+}
+
+async function syncAccount(id) {
+  try {
+    toast('Syncing balance...', 'info');
+    await api('POST', `/accounts/${id}/sync`);
+    toast('Balance synced', 'success');
+    loadAccounts();
+    loadDashboard();
+  } catch(e) {
+    toast(e.message, 'error');
+  }
+}
+
+// ── Contacts ──────────────────────────────────────────────────────────────
+async function loadContacts() {
+  try {
+    const res = await api('GET', '/contacts');
+    contacts = res.data;
+    const grid = document.getElementById('contacts-grid');
+
+    if (contacts.length === 0) {
+      grid.innerHTML = `<div class="empty" style="grid-column:1/-1;padding:64px">
+        <div class="empty-icon"><i data-lucide="users" style="width:24px;height:24px;color:var(--text3)"></i></div>
+        <div class="empty-title">No saved contacts</div>
+        <div class="empty-sub">Save people you send money to regularly</div>
+      </div>`;
+      lucide.createIcons();
+      return;
+    }
+
+    grid.innerHTML = contacts.map(c => `
+      <div class="contact-card">
+        <div class="contact-avatar">${c.label[0].toUpperCase()}</div>
+        <div class="contact-info">
+          <div class="contact-label">${c.label}</div>
+          <div class="contact-bank">${c.bank_name || c.crypto_network || ''}</div>
+          <div class="contact-num">${c.account_number || c.wallet_address || ''}</div>
+        </div>
+        <button onclick="deleteContact('${c.id}')" style="background:none;border:none;cursor:pointer;color:var(--text3);padding:4px">
+          <i data-lucide="trash-2" style="width:15px;height:15px"></i>
+        </button>
+      </div>
+    `).join('');
+    lucide.createIcons();
+  } catch(e) {
+    toast('Failed to load contacts', 'error');
+  }
+}
+
+async function loadBanks() {
+  try {
+    const res = await api('GET', '/contacts/banks');
+    banks = res.data;
+    const sel = document.getElementById('contact-bank-select');
+    sel.innerHTML = banks.map(b => `<option value="${b.code}" data-name="${b.name}">${b.name}</option>`).join('');
+  } catch(e) {}
+}
+
+function openAddContact(prefill = {}) {
+  document.getElementById('contact-label').value = prefill.name || '';
+  document.getElementById('contact-account-name').value = prefill.name || '';
+  document.getElementById('contact-account-number').value = '';
+  openModal('contact-modal');
+}
+
+async function saveContact() {
+  const label  = document.getElementById('contact-label').value.trim();
+  const name   = document.getElementById('contact-account-name').value.trim();
+  const number = document.getElementById('contact-account-number').value.trim();
+  const sel    = document.getElementById('contact-bank-select');
+  const bankCode = sel.value;
+  const bankName = sel.options[sel.selectedIndex]?.dataset.name || sel.options[sel.selectedIndex]?.text;
+
+  if (!label || !name || !number || !bankCode) return toast('Fill in all fields', 'error');
+  if (number.length !== 10) return toast('Account number must be 10 digits', 'error');
+
+  try {
+    await api('POST', '/contacts', {
+      label, type: 'bank',
+      account_name: name,
+      account_number: number,
+      bank_code: bankCode,
+      bank_name: bankName,
+    });
+    closeModal('contact-modal');
+    closeModal('device-modal');
+    toast(`"${label}" saved`, 'success');
+    loadContacts();
+  } catch(e) {
+    toast(e.message, 'error');
+  }
+}
+
+async function deleteContact(id) {
+  if (!confirm('Remove this contact?')) return;
+  try {
+    await api('DELETE', `/contacts/${id}`);
+    toast('Contact removed', 'success');
+    loadContacts();
+  } catch(e) {
+    toast(e.message, 'error');
+  }
+}
+
+async function openDevicePicker() {
+  try {
+    const res = await api('GET', '/contacts/device');
+    const list = document.getElementById('device-contacts-list');
+    list.innerHTML = res.data.map(c => `
+      <div class="device-contact-item" onclick="selectDeviceContact('${c.name}')">
+        <div class="device-avatar">${c.name[0]}</div>
+        <div>
+          <div style="font-size:14px;font-weight:500">${c.name}</div>
+          <div style="font-size:12px;color:var(--text3)">${c.phone}</div>
+        </div>
+      </div>
+    `).join('');
+    openModal('device-modal');
+  } catch(e) {
+    toast('Could not load contacts', 'error');
+  }
+}
+
+function selectDeviceContact(name) {
+  closeModal('device-modal');
+  openAddContact({name});
+}
+
+// ── Ledger ────────────────────────────────────────────────────────────────
+async function loadLedger() {
+  try {
+    const res = await api('GET', '/ledger');
+    const tbody = document.getElementById('ledger-body');
+
+    if (res.data.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:48px;color:var(--text3)">No transactions yet</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = res.data.map(e => `
+      <tr>
+        <td><span class="badge ${e.type === 'credit' ? 'badge-green' : 'badge-red'}">${e.type}</span></td>
+        <td style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.description}</td>
+        <td class="${e.type === 'credit' ? 'amount-credit' : 'amount-debit'}">${e.amount}</td>
+        <td><span class="badge badge-gray">${e.currency}</span></td>
+        <td class="ref-code">${e.reference?.substring(0,16)}...</td>
+        <td style="color:var(--text3);font-size:12.5px">${formatDate(e.date)}</td>
+      </tr>
+    `).join('');
+  } catch(e) {
+    toast('Failed to load ledger', 'error');
+  }
+}
+
+// ── Navigation ────────────────────────────────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+  document.getElementById(`page-${name}`).classList.add('active');
+  document.querySelector(`[data-page="${name}"]`)?.classList.add('active');
+
+  const loaders = {
+    dashboard: loadDashboard,
+    rules:     loadRules,
+    accounts:  loadAccounts,
+    contacts:  loadContacts,
+    ledger:    loadLedger,
+  };
+  loaders[name]?.();
+}
+
+// ── Modal helpers ─────────────────────────────────────────────────────────
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────
+function toast(msg, type = 'info') {
+  const icons = {success:'check-circle',error:'alert-circle',info:'info'};
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<i data-lucide="${icons[type]}" style="width:16px;height:16px"></i>${msg}`;
+  document.getElementById('toast-container').appendChild(el);
+  lucide.createIcons();
+  setTimeout(() => el.remove(), 3500);
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────
+function formatDate(d) {
+  return new Date(d).toLocaleDateString('en-NG', {day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+}
+
+// ── Boot ──────────────────────────────────────────────────────────────────
+if (token) {
+  initApp();
+} else {
+  document.getElementById('auth-screen').style.display = 'flex';
+}
+</script>
+</body>
+</html>
