@@ -7,6 +7,8 @@ use App\Models\User;
 use App\Services\EncryptionService;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
+use App\Models\Rule;
+use App\Models\RuleAction;
 
 class DemoSeeder extends Seeder
 {
@@ -105,6 +107,79 @@ class DemoSeeder extends Seeder
                 ]
             );
         }
+
+        // Demo rule — Salary Day Split
+        $gtbAccount = \App\Models\ConnectedAccount::where('mono_account_id', 'mono_demo_gtb_001')->first();
+
+        $rule = Rule::updateOrCreate(
+            ['user_id' => $user->id, 'name' => 'Salary Day Split'],
+            [
+                'connected_account_id' => $gtbAccount->id,
+                'description'          => 'Automatically split salary on the 25th of every month',
+                'trigger_type'         => 'manual',
+                'trigger_config'       => ['day' => 25],
+                'total_amount_type'    => 'fixed',
+                'total_amount'         => 1000000,
+                'currency'             => 'NGN',
+                'on_failure'           => 'rollback',
+                'is_active'            => true,
+            ]
+        );
+
+        // Delete existing actions to avoid duplicates
+        $rule->actions()->delete();
+
+        $mama    = \App\Models\SavedContact::where('user_id', $user->id)->where('label', 'Mama')->first();
+        $ada     = \App\Models\SavedContact::where('user_id', $user->id)->where('label', 'Ada (Wife)')->first();
+
+        $actions = [
+            [
+                'step_order'  => 1,
+                'action_type' => 'save_piggyvest',
+                'amount_type' => 'percentage',
+                'amount'      => 30,
+                'label'       => 'Save 30% to PiggyVest',
+                'config'      => ['plan' => 'Salary Savings', 'note' => 'Monthly auto-save'],
+            ],
+            [
+                'step_order'  => 2,
+                'action_type' => 'send_bank',
+                'amount_type' => 'fixed',
+                'amount'      => 10000,
+                'label'       => 'Send ₦10,000 to Mama',
+                'config'      => ['contact_id' => $mama?->id, 'narration' => 'Monthly upkeep'],
+            ],
+            [
+                'step_order'  => 3,
+                'action_type' => 'send_bank',
+                'amount_type' => 'fixed',
+                'amount'      => 200000,
+                'label'       => 'Send ₦200,000 to Ada',
+                'config'      => ['contact_id' => $ada?->id, 'narration' => 'House allowance'],
+            ],
+            [
+                'step_order'  => 4,
+                'action_type' => 'convert_crypto',
+                'amount_type' => 'percentage',
+                'amount'      => 10,
+                'label'       => 'Convert 10% to USDT',
+                'config'      => ['network' => 'tron', 'wallet' => 'TRX_DEMO_WALLET'],
+            ],
+            [
+                'step_order'  => 5,
+                'action_type' => 'pay_bill',
+                'amount_type' => 'fixed',
+                'amount'      => 24500,
+                'label'       => 'Pay DSTV Subscription',
+                'config'      => ['provider' => 'dstv', 'smart_card' => '1234567890', 'package' => 'Premium'],
+            ],
+        ];
+
+        foreach ($actions as $action) {
+            RuleAction::create(array_merge($action, ['rule_id' => $rule->id]));
+        }
+
+        $this->command->info('Demo rule created: Salary Day Split (5 actions)');
 
         $this->command->info('Saved contacts: Mama, Ada (Wife), Landlord Musa');
 

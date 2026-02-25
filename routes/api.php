@@ -4,6 +4,17 @@ use App\Http\Controllers\Api\AuthController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AccountController;
 use App\Http\Controllers\Api\ContactController;
+use App\Http\Controllers\Api\RuleController;
+
+// ── Rules (protected) ──────────────────────────────────────────────────────
+Route::middleware('auth:api')->prefix('rules')->group(function () {
+  Route::get('/',          [RuleController::class, 'index']);
+  Route::post('/',         [RuleController::class, 'store']);
+  Route::get('/{id}',      [RuleController::class, 'show']);
+  Route::put('/{id}',      [RuleController::class, 'update']);
+  Route::delete('/{id}',   [RuleController::class, 'destroy']);
+  Route::post('/{id}/toggle', [RuleController::class, 'toggle']);
+});
 
 // ── Contacts (protected) ───────────────────────────────────────────────────
 Route::middleware('auth:api')->prefix('contacts')->group(function () {
