@@ -7,6 +7,10 @@ use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\RuleController;
 use App\Http\Controllers\Api\ExecutionController;
 use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\RuleParserController;
+
+// Add BEFORE the existing rules routes
+Route::middleware('auth:api')->post('/rules/parse', [RuleParserController::class, 'parse']);
 
 // ── Dashboard (protected) ──────────────────────────────────────────────────
 Route::middleware('auth:api')->get('/dashboard', [DashboardController::class, 'index']);
