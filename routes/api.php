@@ -5,6 +5,15 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AccountController;
 use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\RuleController;
+use App\Http\Controllers\Api\ExecutionController;
+
+// ── Executions (protected) ─────────────────────────────────────────────────
+Route::middleware('auth:api')->group(function () {
+  Route::post('/rules/{id}/execute', [ExecutionController::class, 'execute']);
+  Route::get('/executions',          [ExecutionController::class, 'index']);
+  Route::get('/executions/{id}',     [ExecutionController::class, 'show']);
+  Route::get('/ledger',              [ExecutionController::class, 'ledger']);
+});
 
 // ── Rules (protected) ──────────────────────────────────────────────────────
 Route::middleware('auth:api')->prefix('rules')->group(function () {
