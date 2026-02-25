@@ -2,6 +2,15 @@
 
 use App\Http\Controllers\Api\AuthController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\AccountController;
+
+// ── Accounts (protected) ───────────────────────────────────────────────────
+Route::middleware('auth:api')->prefix('accounts')->group(function () {
+  Route::get('/',                  [AccountController::class, 'index']);
+  Route::post('/connect',          [AccountController::class, 'connect']);
+  Route::post('/{id}/sync',        [AccountController::class, 'sync']);
+  Route::get('/{id}/transactions', [AccountController::class, 'transactions']);
+});
 
 // ── Auth (public) ──────────────────────────────────────────────────────────
 Route::prefix('auth')->group(function () {
