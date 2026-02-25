@@ -6,6 +6,10 @@ use App\Http\Controllers\Api\AccountController;
 use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\RuleController;
 use App\Http\Controllers\Api\ExecutionController;
+use App\Http\Controllers\Api\DashboardController;
+
+// ── Dashboard (protected) ──────────────────────────────────────────────────
+Route::middleware('auth:api')->get('/dashboard', [DashboardController::class, 'index']);
 
 // ── Executions (protected) ─────────────────────────────────────────────────
 Route::middleware('auth:api')->group(function () {
