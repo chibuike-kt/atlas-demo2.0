@@ -63,6 +63,51 @@ class DemoSeeder extends Seeder
             ]
         );
 
+        // Saved contacts
+        $encryption = new EncryptionService();
+
+        $contacts = [
+            [
+                'label'          => 'Mama',
+                'type'           => 'bank',
+                'account_name'   => 'Grace Okonkwo',
+                'account_number' => '0112345678',
+                'bank_code'      => '011',
+                'bank_name'      => 'First Bank of Nigeria',
+            ],
+            [
+                'label'          => 'Ada (Wife)',
+                'type'           => 'bank',
+                'account_name'   => 'Adaeze Okonkwo',
+                'account_number' => '0587654321',
+                'bank_code'      => '058',
+                'bank_name'      => 'Guaranty Trust Bank (GTB)',
+            ],
+            [
+                'label'          => 'Landlord Musa',
+                'type'           => 'bank',
+                'account_name'   => 'Musa Ibrahim',
+                'account_number' => '0441234567',
+                'bank_code'      => '044',
+                'bank_name'      => 'Access Bank',
+            ],
+        ];
+
+        foreach ($contacts as $contact) {
+            \App\Models\SavedContact::updateOrCreate(
+                ['user_id' => $user->id, 'label' => $contact['label']],
+                [
+                    'type'               => $contact['type'],
+                    'account_name_enc'   => $encryption->encrypt($contact['account_name']),
+                    'account_number_enc' => $encryption->encrypt($contact['account_number']),
+                    'bank_code'          => $contact['bank_code'],
+                    'bank_name'          => $contact['bank_name'],
+                ]
+            );
+        }
+
+        $this->command->info('Saved contacts: Mama, Ada (Wife), Landlord Musa');
+
         $this->command->info('Demo user created: demo@atlas.io / demo1234');
         $this->command->info('GTB account: ₦2,450,000');
         $this->command->info('Access Bank account: ₦850,000');

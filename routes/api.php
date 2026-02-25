@@ -3,6 +3,16 @@
 use App\Http\Controllers\Api\AuthController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AccountController;
+use App\Http\Controllers\Api\ContactController;
+
+// ── Contacts (protected) ───────────────────────────────────────────────────
+Route::middleware('auth:api')->prefix('contacts')->group(function () {
+  Route::get('/',        [ContactController::class, 'index']);
+  Route::post('/',       [ContactController::class, 'store']);
+  Route::delete('/{id}', [ContactController::class, 'destroy']);
+  Route::get('/device',  [ContactController::class, 'deviceContacts']);
+  Route::get('/banks',   [ContactController::class, 'banks']);
+});
 
 // ── Accounts (protected) ───────────────────────────────────────────────────
 Route::middleware('auth:api')->prefix('accounts')->group(function () {
