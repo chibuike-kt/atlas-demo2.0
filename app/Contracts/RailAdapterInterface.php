@@ -9,7 +9,7 @@ interface RailAdapterInterface
    * Returns result array with rail_reference and details.
    * Throws \RuntimeException on failure.
    */
-  public function execute(array $config, string $amountNgn): array;
+  public function execute(array $config, float $amountNgn): array;
 
   /**
    * Reverse a completed action using its rollback payload.

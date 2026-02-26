@@ -11,7 +11,7 @@ use Illuminate\Support\Str;
  */
 class PiggyVestRail implements RailAdapterInterface
 {
-  public function execute(array $config, string $amountNgn): array
+  public function execute(array $config, float $amountNgn): array
   {
     $reference = 'PV' . strtoupper(Str::random(14));
 

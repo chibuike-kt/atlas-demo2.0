@@ -15,7 +15,7 @@ class FiatRail implements RailAdapterInterface
 {
   public function __construct(private readonly EncryptionService $encryption) {}
 
-  public function execute(array $config, string $amountNgn): array
+  public function execute(array $config, float $amountNgn): array
   {
     $contact = SavedContact::find($config['contact_id']);
 

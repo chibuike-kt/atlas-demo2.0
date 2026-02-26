@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\RuleExecution;
 use App\Services\Engine\ExecutionEngine;
 use App\Services\LedgerService;
 use Illuminate\Http\JsonResponse;
@@ -19,7 +20,6 @@ class ExecutionController extends Controller
 
     /**
      * POST /api/rules/{id}/execute
-     * Manually trigger a rule execution.
      */
     public function execute(string $ruleId): JsonResponse
     {
@@ -53,13 +53,12 @@ class ExecutionController extends Controller
 
     /**
      * GET /api/executions
-     * List all executions for the authenticated user.
+     * — includes executions for soft-deleted rules
      */
     public function index(): JsonResponse
     {
-        $executions = auth()->user()
-            ->ruleExecutions()
-            ->with(['steps', 'rule'])
+        $executions = RuleExecution::where('user_id', auth()->id())
+            ->with(['steps', 'rule' => fn($q) => $q->withTrashed()])
             ->orderBy('created_at', 'desc')
             ->limit(20)
             ->get()
@@ -73,13 +72,11 @@ class ExecutionController extends Controller
 
     /**
      * GET /api/executions/{id}
-     * Single execution detail with all steps.
      */
     public function show(string $id): JsonResponse
     {
-        $execution = auth()->user()
-            ->ruleExecutions()
-            ->with(['steps', 'rule'])
+        $execution = RuleExecution::where('user_id', auth()->id())
+            ->with(['steps', 'rule' => fn($q) => $q->withTrashed()])
             ->findOrFail($id);
 
         return response()->json([
@@ -90,6 +87,7 @@ class ExecutionController extends Controller
 
     /**
      * GET /api/ledger
+     * — permanent, never affected by rule deletion
      */
     public function ledger(Request $request): JsonResponse
     {
@@ -104,27 +102,30 @@ class ExecutionController extends Controller
 
     private function formatExecution($execution): array
     {
+        $ruleDeleted = $execution->rule?->trashed() ?? false;
+
         return [
             'id'           => $execution->id,
             'rule'         => [
-                'id'   => $execution->rule?->id,
-                'name' => $execution->rule?->name,
+                'id'      => $execution->rule?->id,
+                'name'    => $execution->rule?->name ?? '[Deleted Rule]',
+                'deleted' => $ruleDeleted,
             ],
-            'triggered_by'   => $execution->triggered_by,
-            'total_amount'   => '₦' . number_format((float)$execution->total_amount_ngn, 2),
-            'status'         => $execution->status,
-            'started_at'     => $execution->started_at,
-            'completed_at'   => $execution->completed_at,
-            'error_message'  => $execution->error_message,
-            'steps'          => $execution->steps->map(fn($s) => [
-                'step'          => $s->step_order,
-                'label'         => $s->label,
-                'action_type'   => $s->action_type,
-                'amount'        => '₦' . number_format((float)$s->amount_ngn, 2),
-                'status'        => $s->status,
+            'triggered_by'  => $execution->triggered_by,
+            'total_amount'  => '₦' . number_format((float) $execution->total_amount_ngn, 2),
+            'status'        => $execution->status,
+            'started_at'    => $execution->started_at,
+            'completed_at'  => $execution->completed_at,
+            'error_message' => $execution->error_message,
+            'steps'         => $execution->steps->map(fn($s) => [
+                'step'           => $s->step_order,
+                'label'          => $s->label,
+                'action_type'    => $s->action_type,
+                'amount'         => '₦' . number_format((float) $s->amount_ngn, 2),
+                'status'         => $s->status,
                 'rail_reference' => $s->rail_reference,
-                'result'        => $s->result,
-                'completed_at'  => $s->completed_at,
+                'result'         => $s->result,
+                'completed_at'   => $s->completed_at,
             ])->toArray(),
         ];
     }

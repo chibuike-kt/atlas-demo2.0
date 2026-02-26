@@ -99,33 +99,20 @@ class RuleService
     $rule = $user->rules()->with('actions')->findOrFail($id);
 
     DB::transaction(function () use ($rule) {
-      // Get execution IDs for this rule
-      $executionIds = \App\Models\RuleExecution::where('rule_id', $rule->id)->pluck('id');
+      // Soft delete actions — preserves foreign key references in execution_steps
+      $rule->actions()->each(fn($a) => $a->delete());
 
-      if ($executionIds->isNotEmpty()) {
-        // Delete ledger entries tied to these executions
-        \App\Models\LedgerEntry::whereIn('execution_id', $executionIds)->delete();
-
-        // Delete execution steps
-        \App\Models\ExecutionStep::whereIn('execution_id', $executionIds)->delete();
-
-        // Delete executions
-        \App\Models\RuleExecution::whereIn('id', $executionIds)->delete();
-      }
-
-      // Delete any steps referencing this rule's actions directly
-      $actionIds = $rule->actions->pluck('id');
-      if ($actionIds->isNotEmpty()) {
-        \App\Models\ExecutionStep::whereIn('rule_action_id', $actionIds)->delete();
-      }
-
-      // Now safe to delete actions and rule
-      $rule->actions()->delete();
+      // Soft delete the rule itself
       $rule->delete();
+
+      // NOTE: executions, steps, and ledger entries are NEVER deleted
+      // They are permanent financial records — orphaned but preserved
     });
 
     activity()
       ->causedBy($user)
+      ->performedOn($rule)
+      ->withProperties(['rule_name' => $rule->name])
       ->log('rule.deleted');
   }
 

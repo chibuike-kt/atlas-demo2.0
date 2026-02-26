@@ -18,7 +18,7 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
 
-        // Connected accounts
+        // ── Accounts ─────────────────────────────────────────────────────────
         $accounts = $user->connectedAccounts()
             ->where('is_active', true)
             ->get()
@@ -29,25 +29,39 @@ class DashboardController extends Controller
                 'balance'     => (float) $a->balance,
                 'formatted'   => $a->formattedBalance(),
                 'is_primary'  => $a->is_primary,
+                'account_number' => $a->masked_account_number ?? '**********',
                 'synced_at'   => $a->balance_synced_at,
             ]);
 
         $totalBalance = $accounts->sum('balance');
 
-        // Rules summary
-        $rules       = $user->rules();
-        $activeRules = (clone $rules)->where('is_active', true)->count();
-        $totalRules  = $rules->count();
+        // ── Rules — include soft-deleted in total count ───────────────────────
+        $activeRules = $user->rules()->where('is_active', true)->count();
+        $totalRules  = $user->rules()->count(); // excludes soft-deleted via SoftDeletes scope
+        $allTimeRules = $user->rules()->withTrashed()->count(); // includes deleted
 
-        // Recent executions
-        $recentExecutions = $user->ruleExecutions()
-            ->with(['steps', 'rule'])
+        // ── Executions — never deleted, always accurate ───────────────────────
+        $totalExecutions      = RuleExecution::where('user_id', $user->id)->count();
+        $successfulExecutions = RuleExecution::where('user_id', $user->id)
+            ->where('status', 'completed')
+            ->count();
+        $failedExecutions     = RuleExecution::where('user_id', $user->id)
+            ->where('status', 'failed')
+            ->count();
+        $totalMoved           = RuleExecution::where('user_id', $user->id)
+            ->where('status', 'completed')
+            ->sum('total_amount_ngn');
+
+        // ── Recent executions — withTrashed on rule so deleted rules still show ─
+        $recentExecutions = RuleExecution::where('user_id', $user->id)
+            ->with(['steps', 'rule' => fn($q) => $q->withTrashed()])
             ->orderBy('created_at', 'desc')
             ->limit(5)
             ->get()
             ->map(fn($e) => [
                 'id'           => $e->id,
-                'rule_name'    => $e->rule?->name,
+                'rule_name'    => $e->rule?->name ?? '[Deleted Rule]',
+                'rule_deleted' => $e->rule?->trashed() ?? false,
                 'total_amount' => '₦' . number_format((float) $e->total_amount_ngn, 2),
                 'status'       => $e->status,
                 'steps_count'  => $e->steps->count(),
@@ -55,14 +69,7 @@ class DashboardController extends Controller
                 'executed_at'  => $e->created_at,
             ]);
 
-        // Execution stats
-        $totalExecutions     = $user->ruleExecutions()->count();
-        $successfulExecutions = $user->ruleExecutions()->where('status', 'completed')->count();
-        $totalMoved          = $user->ruleExecutions()
-            ->where('status', 'completed')
-            ->sum('total_amount_ngn');
-
-        // Recent ledger entries
+        // ── Ledger — permanent, never deleted ────────────────────────────────
         $ledger = LedgerEntry::where('user_id', $user->id)
             ->orderBy('created_at', 'desc')
             ->limit(10)
@@ -76,8 +83,12 @@ class DashboardController extends Controller
                 'date'        => $e->created_at,
             ]);
 
-        // Saved contacts count
+        // ── Contacts ──────────────────────────────────────────────────────────
         $contactsCount = $user->savedContacts()->where('is_active', true)->count();
+        $walletsCount  = $user->savedContacts()
+            ->where('is_active', true)
+            ->where('type', 'crypto')
+            ->count();
 
         return response()->json([
             'success' => true,
@@ -87,14 +98,17 @@ class DashboardController extends Controller
                     'email' => $user->email,
                 ],
                 'summary' => [
-                    'total_balance'        => '₦' . number_format($totalBalance, 2),
-                    'total_balance_raw'    => $totalBalance,
-                    'active_rules'         => $activeRules,
-                    'total_rules'          => $totalRules,
-                    'total_executions'     => $totalExecutions,
+                    'total_balance'         => '₦' . number_format($totalBalance, 2),
+                    'total_balance_raw'     => $totalBalance,
+                    'active_rules'          => $activeRules,
+                    'total_rules'           => $totalRules,
+                    'all_time_rules'        => $allTimeRules,
+                    'total_executions'      => $totalExecutions,
                     'successful_executions' => $successfulExecutions,
-                    'total_moved'          => '₦' . number_format((float) $totalMoved, 2),
-                    'contacts_count'       => $contactsCount,
+                    'failed_executions'     => $failedExecutions,
+                    'total_moved'           => '₦' . number_format((float) $totalMoved, 2),
+                    'contacts_count'        => $contactsCount,
+                    'wallets_count'         => $walletsCount,
                 ],
                 'accounts'          => $accounts,
                 'recent_executions' => $recentExecutions,

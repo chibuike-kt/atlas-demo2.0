@@ -9,8 +9,57 @@ use App\Http\Controllers\Api\ExecutionController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\RuleParserController;
 
-// Add BEFORE the existing rules routes
+Route::middleware('auth:api')->get('/executions/{id}/receipt', function (string $id) {
+  $execution = \App\Models\RuleExecution::where('user_id', auth()->id())
+    ->with(['steps', 'rule' => fn($q) => $q->withTrashed(), 'user'])
+    ->findOrFail($id);
+
+  $service = new \App\Services\ReceiptService();
+  $receipt = $service->generate($execution);
+
+  // Return HTML receipt for browser rendering / printing
+  return response($service->renderHtml($receipt))
+    ->header('Content-Type', 'text/html');
+});
+
+// List user receipts
+Route::middleware('auth:api')->get('/receipts', function () {
+  $receipts = \App\Models\Receipt::where('user_id', auth()->id())
+    ->orderBy('created_at', 'desc')
+    ->get()
+    ->map(fn($r) => [
+      'id'             => $r->id,
+      'receipt_number' => $r->receipt_number,
+      'execution_id'   => $r->execution_id,
+      'total_amount'   => '₦' . number_format((float) $r->total_amount, 2),
+      'total_fees'     => '₦' . number_format((float) $r->total_fees, 2),
+      'status'         => $r->status,
+      'created_at'     => $r->created_at,
+    ]);
+
+  return response()->json(['success' => true, 'data' => $receipts]);
+});
+
 Route::middleware('auth:api')->post('/rules/parse', [RuleParserController::class, 'parse']);
+
+Route::middleware('auth:api')->get('/crypto-balances', function () {
+  $balances = \App\Models\CryptoBalance::where('user_id', auth()->id())
+    ->orderBy('balance', 'desc')
+    ->get()
+    ->map(fn($b) => [
+      'id'             => $b->id,
+      'token'          => $b->token,
+      'network'        => $b->network,
+      'wallet_label'   => $b->wallet_label,
+      'balance'        => (float) $b->balance,
+      'balance_formatted' => $b->formattedBalance(),
+      'total_received' => (float) $b->total_received,
+      'total_sent'     => (float) $b->total_sent,
+      'last_updated_at' => $b->last_updated_at,
+    ]);
+
+  return response()->json(['success' => true, 'data' => $balances]);
+});
 
 // ── Dashboard (protected) ──────────────────────────────────────────────────
 Route::middleware('auth:api')->get('/dashboard', [DashboardController::class, 'index']);
