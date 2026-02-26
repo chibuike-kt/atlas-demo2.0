@@ -55,7 +55,7 @@ class RuleController extends Controller
         try {
             $rule = $this->ruleService->create(
                 auth()->user(),
-                $request->validated()
+                $request->all()
             );
 
             return response()->json([
@@ -112,7 +112,7 @@ class RuleController extends Controller
             $rule = $this->ruleService->update(
                 auth()->user(),
                 $id,
-                $request->validated()
+                $request->all()
             );
 
             return response()->json([

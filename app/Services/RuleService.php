@@ -96,15 +96,37 @@ class RuleService
 
   public function delete(User $user, string $id): void
   {
-    $rule = $user->rules()->findOrFail($id);
+    $rule = $user->rules()->with('actions')->findOrFail($id);
+
+    DB::transaction(function () use ($rule) {
+      // Get execution IDs for this rule
+      $executionIds = \App\Models\RuleExecution::where('rule_id', $rule->id)->pluck('id');
+
+      if ($executionIds->isNotEmpty()) {
+        // Delete ledger entries tied to these executions
+        \App\Models\LedgerEntry::whereIn('execution_id', $executionIds)->delete();
+
+        // Delete execution steps
+        \App\Models\ExecutionStep::whereIn('execution_id', $executionIds)->delete();
+
+        // Delete executions
+        \App\Models\RuleExecution::whereIn('id', $executionIds)->delete();
+      }
+
+      // Delete any steps referencing this rule's actions directly
+      $actionIds = $rule->actions->pluck('id');
+      if ($actionIds->isNotEmpty()) {
+        \App\Models\ExecutionStep::whereIn('rule_action_id', $actionIds)->delete();
+      }
+
+      // Now safe to delete actions and rule
+      $rule->actions()->delete();
+      $rule->delete();
+    });
 
     activity()
       ->causedBy($user)
-      ->performedOn($rule)
       ->log('rule.deleted');
-
-    $rule->actions()->delete();
-    $rule->delete();
   }
 
   public function toggle(User $user, string $id): Rule

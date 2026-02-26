@@ -16,6 +16,8 @@ class Rule extends Model
         'connected_account_id',
         'name',
         'description',
+        'rule_text',
+        'parsed_rule',
         'trigger_type',
         'trigger_config',
         'total_amount_type',
@@ -34,6 +36,7 @@ class Rule extends Model
             'total_amount'      => 'decimal:6',
             'is_active'         => 'boolean',
             'last_triggered_at' => 'datetime',
+            'parsed_rule' => 'array',
         ];
     }
 

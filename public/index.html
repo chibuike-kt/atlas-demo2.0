@@ -394,43 +394,13 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 }
 .exec-result-body{padding:20px}
 
-/* ── Rule Builder ── */
-.rb-step-tab{
-  display:flex;align-items:center;gap:8px;padding:14px 20px;cursor:pointer;
-  font-size:13px;font-weight:500;color:var(--text3);border-bottom:2px solid transparent;
-  transition:all .15s;
+/* ── Rule Builder (NLP) ── */
+.rb-example-pill{
+  padding:4px 10px;border:1px solid var(--border2);border-radius:99px;
+  font-size:11.5px;color:var(--text2);cursor:pointer;background:var(--surface);
+  transition:all .15s;font-family:var(--font);
 }
-.rb-step-tab:hover{color:var(--text2)}
-.rb-step-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
-.rb-step-tab.done{color:var(--green)}
-.rb-step-num{
-  width:22px;height:22px;border-radius:50%;background:var(--surface2);
-  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;
-  font-family:var(--mono);transition:all .15s;
-}
-.rb-step-tab.active .rb-step-num{background:var(--accent);color:#fff}
-.rb-step-tab.done .rb-step-num{background:var(--green);color:#fff}
-.rb-trigger-card{
-  padding:14px;border:1.5px solid var(--border);border-radius:var(--radius);
-  cursor:pointer;transition:all .15s;
-}
-.rb-trigger-card:hover{border-color:var(--border2);background:var(--bg)}
-.rb-trigger-card.selected{border-color:var(--accent);background:var(--accent-light)}
-.rb-trigger-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:8px}
-.rb-trigger-name{font-size:13.5px;font-weight:600;color:var(--text);margin-bottom:2px}
-.rb-trigger-desc{font-size:12px;color:var(--text3)}
-.rb-amount-type-card{
-  padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius);
-  cursor:pointer;transition:all .15s;text-align:center;
-}
-.rb-amount-type-card:hover{border-color:var(--border2)}
-.rb-amount-type-card.selected{border-color:var(--accent);background:var(--accent-light)}
-.rb-action-type-btn{
-  display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 6px;
-  border:1.5px solid var(--border);border-radius:var(--radius);cursor:pointer;
-  background:var(--surface);transition:all .15s;font-size:11.5px;font-weight:500;color:var(--text2);
-}
-.rb-action-type-btn:hover{border-color:var(--accent);background:var(--accent-light);color:var(--accent)}
+.rb-example-pill:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light)}
 .rb-account-option{
   display:flex;align-items:center;justify-content:space-between;
   padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--radius);
@@ -438,17 +408,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 }
 .rb-account-option:hover{border-color:var(--border2)}
 .rb-account-option.selected{border-color:var(--accent);background:var(--accent-light)}
-.rb-built-action{
-  display:flex;align-items:center;gap:10px;padding:12px 14px;
-  background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);
-}
-.rb-built-action-icon{
-  width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;
-}
-.rb-review-section{margin-bottom:12px;padding:14px;background:var(--bg);border-radius:var(--radius);border:1px solid var(--border)}
-.rb-review-label{font-size:11.5px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
-.rb-review-value{font-size:14px;color:var(--text);font-weight:500}
-.rb-review-sub{font-size:12.5px;color:var(--text2);margin-top:2px}
 
 /* ── Responsive ── */
 @media(max-width:768px){
@@ -615,19 +574,25 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
     <div class="page" id="page-contacts">
       <div class="page-header" style="display:flex;align-items:center;justify-content:space-between">
         <div>
-          <div class="page-title">Saved Contacts</div>
-          <div class="page-sub">People you send money to regularly</div>
+          <div class="page-title">Contacts & Wallets</div>
+          <div class="page-sub">Bank contacts and crypto wallets used in your rules</div>
         </div>
         <div style="display:flex;gap:8px">
           <button class="btn btn-secondary btn-sm" onclick="openDevicePicker()">
             <i data-lucide="smartphone" style="width:14px;height:14px"></i> From Phone
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="openAddWallet()">
+            <i data-lucide="bitcoin" style="width:14px;height:14px"></i> Add Wallet
           </button>
           <button class="btn btn-primary btn-sm" onclick="openAddContact()">
             <i data-lucide="plus" style="width:14px;height:14px"></i> Add Contact
           </button>
         </div>
       </div>
-      <div id="contacts-grid" class="grid-3"></div>
+      <div style="font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Bank Contacts</div>
+      <div id="contacts-grid" class="grid-3" style="margin-bottom:28px"></div>
+      <div style="font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Crypto Wallets</div>
+      <div id="wallets-grid" class="grid-3"></div>
     </div>
 
     <!-- Ledger -->
@@ -656,187 +621,59 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
   </div>
 </div>
 
+
+
 <!-- ── Rule Builder Modal ── -->
 <div class="modal-overlay" id="rule-builder-modal">
-  <div class="modal" style="max-width:660px;padding:0;overflow:hidden">
-
-    <!-- Step indicator -->
-    <div id="rb-step-bar" style="display:flex;border-bottom:1px solid var(--border);background:var(--bg)">
-      <div class="rb-step-tab active" data-step="1" onclick="rbGoStep(1)">
-        <span class="rb-step-num">1</span><span class="rb-step-lbl">Basics</span>
+  <div class="modal" style="max-width:680px">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">New Rule</div>
+        <div style="font-size:13px;color:var(--text2);margin-top:2px">Describe what you want Atlas to do — in plain English</div>
       </div>
-      <div class="rb-step-tab" data-step="2" onclick="rbGoStep(2)">
-        <span class="rb-step-num">2</span><span class="rb-step-lbl">Trigger</span>
-      </div>
-      <div class="rb-step-tab" data-step="3" onclick="rbGoStep(3)">
-        <span class="rb-step-num">3</span><span class="rb-step-lbl">Actions</span>
-      </div>
-      <div class="rb-step-tab" data-step="4" onclick="rbGoStep(4)">
-        <span class="rb-step-num">4</span><span class="rb-step-lbl">Review</span>
-      </div>
-      <button class="modal-close" style="margin-left:auto;margin-right:12px" onclick="closeModal('rule-builder-modal')">
+      <button class="modal-close" onclick="closeModal('rule-builder-modal')">
         <i data-lucide="x" style="width:16px;height:16px"></i>
       </button>
     </div>
-
-    <!-- Step 1: Basics -->
-    <div class="rb-panel" id="rb-panel-1" style="padding:28px">
-      <div style="font-size:18px;font-weight:600;margin-bottom:4px">Name your rule</div>
-      <div style="font-size:13px;color:var(--text2);margin-bottom:24px">Give it a clear name and pick which account to debit</div>
-
-      <div class="form-group">
-        <label class="form-label">Rule name</label>
-        <input type="text" class="form-input" id="rb-name" placeholder="e.g. Salary Day Split, Rent Automation, DCA into USDT"/>
+    <div class="form-group">
+      <label class="form-label">Debit from account</label>
+      <div id="rb-account-cards" style="display:flex;flex-direction:column;gap:8px;margin-top:6px"></div>
+    </div>
+    <div class="form-group" style="margin-top:20px">
+      <label class="form-label">Your rule</label>
+      <div style="position:relative">
+        <textarea id="rb-rule-input"
+          placeholder="e.g. every day convert ₦2,000 to USDT on BEP-20 and send to my Binance wallet&#10;e.g. on the 25th save 30% to PiggyVest and send ₦10,000 to Mama&#10;e.g. when salary arrives save 20% to Cowrywise and convert 10% to USDT on Tron"
+          oninput="rbOnInput()"
+          style="width:100%;min-height:100px;padding:14px;border:1.5px solid var(--border2);border-radius:var(--radius);
+          font-family:var(--font);font-size:14px;line-height:1.6;color:var(--text);resize:vertical;outline:none;
+          transition:border-color .15s;background:var(--surface)"
+          onfocus="this.style.borderColor='var(--accent)';this.style.boxShadow='0 0 0 3px rgba(15,111,222,.1)'"
+          onfocusout="this.style.borderColor='var(--border2)';this.style.boxShadow='none'"
+        ></textarea>
+        <div id="rb-thinking" style="display:none;position:absolute;bottom:12px;right:12px;align-items:center;gap:6px;font-size:12px;color:var(--text3)">
+          <div class="spinner dark" style="width:14px;height:14px"></div> Parsing...
+        </div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Description <span style="color:var(--text3);font-weight:400">(optional)</span></label>
-        <input type="text" class="form-input" id="rb-desc" placeholder="What does this rule do?"/>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Debit from account</label>
-        <div id="rb-account-cards" style="display:flex;flex-direction:column;gap:8px;margin-top:4px"></div>
-      </div>
-
-      <div style="display:flex;justify-content:flex-end;margin-top:8px">
-        <button class="btn btn-primary" onclick="rbNext(1)">
-          Continue <i data-lucide="arrow-right" style="width:15px;height:15px"></i>
-        </button>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">
+        <span style="font-size:11.5px;color:var(--text3);padding-top:3px">Try:</span>
+        <button class="rb-example-pill" onclick="rbFillExample(this)">every day convert ₦2000 to USDT on BEP-20</button>
+        <button class="rb-example-pill" onclick="rbFillExample(this)">on the 25th save 30% to piggyvest and send ₦10000 to mama</button>
+        <button class="rb-example-pill" onclick="rbFillExample(this)">when salary arrives convert 50% to USDT on tron</button>
+        <button class="rb-example-pill" onclick="rbFillExample(this)">every week send ₦5000 to mama</button>
+        <button class="rb-example-pill" onclick="rbFillExample(this)">every hour convert ₦1000 to USDT on BEP-20</button>
       </div>
     </div>
-
-    <!-- Step 2: Trigger -->
-    <div class="rb-panel" id="rb-panel-2" style="padding:28px;display:none">
-      <div style="font-size:18px;font-weight:600;margin-bottom:4px">When should this run?</div>
-      <div style="font-size:13px;color:var(--text2);margin-bottom:24px">Choose what triggers this rule to execute</div>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">
-        <div class="rb-trigger-card" data-trigger="schedule" onclick="rbSelectTrigger('schedule')">
-          <div class="rb-trigger-icon" style="background:var(--accent-light);color:var(--accent)">
-            <i data-lucide="calendar" style="width:20px;height:20px"></i>
-          </div>
-          <div class="rb-trigger-name">Monthly Schedule</div>
-          <div class="rb-trigger-desc">Run on a specific day each month</div>
-        </div>
-        <div class="rb-trigger-card" data-trigger="deposit" onclick="rbSelectTrigger('deposit')">
-          <div class="rb-trigger-icon" style="background:var(--green-bg);color:var(--green)">
-            <i data-lucide="arrow-down-circle" style="width:20px;height:20px"></i>
-          </div>
-          <div class="rb-trigger-name">On Deposit / Salary</div>
-          <div class="rb-trigger-desc">Fires when money comes in</div>
-        </div>
-        <div class="rb-trigger-card" data-trigger="balance" onclick="rbSelectTrigger('balance')">
-          <div class="rb-trigger-icon" style="background:var(--orange-bg);color:var(--orange)">
-            <i data-lucide="trending-up" style="width:20px;height:20px"></i>
-          </div>
-          <div class="rb-trigger-name">Balance Threshold</div>
-          <div class="rb-trigger-desc">When balance exceeds a limit</div>
-        </div>
-        <div class="rb-trigger-card" data-trigger="manual" onclick="rbSelectTrigger('manual')">
-          <div class="rb-trigger-icon" style="background:var(--purple-bg);color:var(--purple)">
-            <i data-lucide="hand" style="width:20px;height:20px"></i>
-          </div>
-          <div class="rb-trigger-name">Manual</div>
-          <div class="rb-trigger-desc">You trigger it yourself</div>
-        </div>
-      </div>
-
-      <!-- Trigger config -->
-      <div id="rb-trigger-config" style="display:none;padding:16px;background:var(--bg);border-radius:var(--radius);border:1px solid var(--border);margin-bottom:20px"></div>
-
-      <!-- Amount section -->
-      <div style="font-size:13px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">How much to debit?</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px">
-        <div class="rb-amount-type-card" data-type="fixed" onclick="rbSelectAmountType('fixed')">
-          <div style="font-size:13px;font-weight:600">Fixed ₦</div>
-          <div style="font-size:12px;color:var(--text3)">Exact amount</div>
-        </div>
-        <div class="rb-amount-type-card" data-type="percentage" onclick="rbSelectAmountType('percentage')">
-          <div style="font-size:13px;font-weight:600">% of balance</div>
-          <div style="font-size:12px;color:var(--text3)">Percentage</div>
-        </div>
-        <div class="rb-amount-type-card" data-type="full_balance" onclick="rbSelectAmountType('full_balance')">
-          <div style="font-size:13px;font-weight:600">Full balance</div>
-          <div style="font-size:12px;color:var(--text3)">Everything</div>
-        </div>
-      </div>
-      <div id="rb-amount-input-wrap" style="display:none">
-        <input type="number" class="form-input" id="rb-amount" placeholder="Enter amount" oninput="rbUpdatePreview()"/>
-        <div id="rb-amount-preview" style="font-size:13px;color:var(--accent);margin-top:8px;font-weight:500"></div>
-      </div>
-
-      <div style="display:flex;justify-content:space-between;margin-top:20px">
-        <button class="btn btn-secondary" onclick="rbGoStep(1)">
-          <i data-lucide="arrow-left" style="width:15px;height:15px"></i> Back
-        </button>
-        <button class="btn btn-primary" onclick="rbNext(2)">
-          Continue <i data-lucide="arrow-right" style="width:15px;height:15px"></i>
-        </button>
-      </div>
+    <div id="rb-parse-result" style="display:none;margin-top:4px"></div>
+    <div style="display:flex;gap:10px;margin-top:20px">
+      <button class="btn btn-secondary" style="flex:1" onclick="closeModal('rule-builder-modal')">Cancel</button>
+      <button class="btn btn-primary" style="flex:2;opacity:.4;pointer-events:none" id="rb-confirm-btn" onclick="rbConfirm()">
+        <i data-lucide="check" style="width:15px;height:15px"></i> Confirm Rule
+      </button>
     </div>
-
-    <!-- Step 3: Actions -->
-    <div class="rb-panel" id="rb-panel-3" style="padding:28px;display:none">
-      <div style="font-size:18px;font-weight:600;margin-bottom:4px">What should it do?</div>
-      <div style="font-size:13px;color:var(--text2);margin-bottom:20px">Add actions in the order they should execute. If any step fails, all previous steps are rolled back.</div>
-
-      <div id="rb-actions-list" style="display:flex;flex-direction:column;gap:8px"></div>
-
-      <!-- Action type picker -->
-      <div style="margin-top:12px">
-        <div style="font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Add an action</div>
-        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px">
-          <button class="rb-action-type-btn" onclick="rbAddAction('send_bank')">
-            <i data-lucide="send" style="width:16px;height:16px;color:var(--accent)"></i>
-            <span>Bank Transfer</span>
-          </button>
-          <button class="rb-action-type-btn" onclick="rbAddAction('save_piggyvest')">
-            <i data-lucide="piggy-bank" style="width:16px;height:16px;color:var(--green)"></i>
-            <span>PiggyVest</span>
-          </button>
-          <button class="rb-action-type-btn" onclick="rbAddAction('save_cowrywise')">
-            <i data-lucide="trending-up" style="width:16px;height:16px;color:var(--purple)"></i>
-            <span>Cowrywise</span>
-          </button>
-          <button class="rb-action-type-btn" onclick="rbAddAction('convert_crypto')">
-            <i data-lucide="bitcoin" style="width:16px;height:16px;color:var(--orange)"></i>
-            <span>To USDT</span>
-          </button>
-          <button class="rb-action-type-btn" onclick="rbAddAction('pay_bill')">
-            <i data-lucide="zap" style="width:16px;height:16px;color:var(--red)"></i>
-            <span>Pay Bill</span>
-          </button>
-        </div>
-      </div>
-
-      <div id="rb-action-editor" style="display:none;margin-top:16px;padding:16px;background:var(--bg);border:1.5px solid var(--accent);border-radius:var(--radius)"></div>
-
-      <div style="display:flex;justify-content:space-between;margin-top:20px">
-        <button class="btn btn-secondary" onclick="rbGoStep(2)">
-          <i data-lucide="arrow-left" style="width:15px;height:15px"></i> Back
-        </button>
-        <button class="btn btn-primary" onclick="rbNext(3)">
-          Review <i data-lucide="arrow-right" style="width:15px;height:15px"></i>
-        </button>
-      </div>
-    </div>
-
-    <!-- Step 4: Review -->
-    <div class="rb-panel" id="rb-panel-4" style="padding:28px;display:none">
-      <div style="font-size:18px;font-weight:600;margin-bottom:4px">Review & Save</div>
-      <div style="font-size:13px;color:var(--text2);margin-bottom:20px">Here's your rule before saving</div>
-      <div id="rb-review"></div>
-      <div style="display:flex;gap:10px;margin-top:24px">
-        <button class="btn btn-secondary" style="flex:1" onclick="rbGoStep(3)">
-          <i data-lucide="arrow-left" style="width:15px;height:15px"></i> Edit
-        </button>
-        <button class="btn btn-primary" style="flex:2" id="rb-save-btn" onclick="rbSave()">
-          <i data-lucide="check" style="width:15px;height:15px"></i> Save Rule
-        </button>
-      </div>
-    </div>
-
   </div>
 </div>
+
 
 <!-- ── Execution Result Modal ── -->
 <div class="modal-overlay" id="exec-modal">
@@ -881,6 +718,42 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
     <div style="display:flex;gap:10px;margin-top:20px">
       <button class="btn btn-secondary" style="flex:1" onclick="closeModal('contact-modal')">Cancel</button>
       <button class="btn btn-primary" style="flex:2" onclick="saveContact()">Save Contact</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Add Wallet Modal ── -->
+<div class="modal-overlay" id="wallet-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Add Crypto Wallet</div>
+      <button class="modal-close" onclick="closeModal('wallet-modal')">
+        <i data-lucide="x" style="width:16px;height:16px"></i>
+      </button>
+    </div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:20px">Save a wallet so Atlas can use it in your rules — e.g. <em>"convert ₦2000 to USDT and send to my <strong>Binance wallet</strong>"</em></p>
+    <div class="form-group">
+      <label class="form-label">Wallet label</label>
+      <input type="text" class="form-input" id="wallet-label" placeholder="e.g. Binance, Trust Wallet, Bybit, Cold Wallet"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Network</label>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:6px" id="wallet-network-grid">
+        <div class="rb-amount-type-card" data-net="bep20" onclick="selectWalletNetwork('bep20')"><div style="font-size:13px;font-weight:600">BEP-20</div><div style="font-size:11px;color:var(--text3)">Binance Smart Chain</div></div>
+        <div class="rb-amount-type-card" data-net="trc20" onclick="selectWalletNetwork('trc20')"><div style="font-size:13px;font-weight:600">TRC-20</div><div style="font-size:11px;color:var(--text3)">Tron Network</div></div>
+        <div class="rb-amount-type-card" data-net="erc20" onclick="selectWalletNetwork('erc20')"><div style="font-size:13px;font-weight:600">ERC-20</div><div style="font-size:11px;color:var(--text3)">Ethereum</div></div>
+        <div class="rb-amount-type-card" data-net="polygon" onclick="selectWalletNetwork('polygon')"><div style="font-size:13px;font-weight:600">Polygon</div><div style="font-size:11px;color:var(--text3)">MATIC</div></div>
+        <div class="rb-amount-type-card" data-net="solana" onclick="selectWalletNetwork('solana')"><div style="font-size:13px;font-weight:600">Solana</div><div style="font-size:11px;color:var(--text3)">SOL Network</div></div>
+        <div class="rb-amount-type-card" data-net="arbitrum" onclick="selectWalletNetwork('arbitrum')"><div style="font-size:13px;font-weight:600">Arbitrum</div><div style="font-size:11px;color:var(--text3)">ARB Network</div></div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Wallet address</label>
+      <input type="text" class="form-input" id="wallet-address" placeholder="Paste your wallet address here" style="font-family:var(--mono);font-size:12.5px"/>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:20px">
+      <button class="btn btn-secondary" style="flex:1" onclick="closeModal('wallet-modal')">Cancel</button>
+      <button class="btn btn-primary" style="flex:2" onclick="saveWallet()">Save Wallet</button>
     </div>
   </div>
 </div>
@@ -1153,475 +1026,242 @@ function formatActionAmount(a) {
 }
 
 // ── Rule Builder ──────────────────────────────────────────────────────────
-// ── Rule Builder (step-by-step) ───────────────────────────────────────────
-let rb = { step:1, name:'', desc:'', accountId:'', trigger:'', triggerConfig:{}, amountType:'', amount:'', actions:[] };
-let rbEditingAction = null; // index of action being edited, or null
+// ── Rule Builder (NLP) ───────────────────────────────────────────────────
+let rbParsed = null;
+let rbSelectedAccountId = null;
+let rbDebounceTimer = null;
 
 function openRuleBuilder() {
-  rb = { step:1, name:'', desc:'', accountId:'', trigger:'', triggerConfig:{}, amountType:'', amount:'', actions:[] };
-  rbEditingAction = null;
+  rbParsed = null;
+  rbSelectedAccountId = null;
 
-  // Reset all steps
-  document.getElementById('rb-name').value = '';
-  document.getElementById('rb-desc').value = '';
-  document.querySelectorAll('.rb-trigger-card').forEach(c => c.classList.remove('selected'));
-  document.querySelectorAll('.rb-amount-type-card').forEach(c => c.classList.remove('selected'));
-  document.getElementById('rb-trigger-config').style.display = 'none';
-  document.getElementById('rb-amount-input-wrap').style.display = 'none';
-  document.getElementById('rb-amount-preview').textContent = '';
-  document.getElementById('rb-action-editor').style.display = 'none';
+  document.getElementById('rb-rule-input').value = '';
+  document.getElementById('rb-parse-result').style.display = 'none';
+  document.getElementById('rb-parse-result').innerHTML = '';
+  rbSetConfirmEnabled(false);
 
   // Populate account cards
   const wrap = document.getElementById('rb-account-cards');
-  wrap.innerHTML = accounts.map(a => `
-    <div class="rb-account-option" data-id="${a.id}" onclick="rbSelectAccount('${a.id}')">
-      <div>
-        <div style="font-size:14px;font-weight:500">${a.institution}</div>
-        <div style="font-size:12px;color:var(--text3)">${a.account_type} · ${a.account_number}</div>
+  if (accounts.length === 0) {
+    wrap.innerHTML = `<div style="font-size:13px;color:var(--text3);padding:10px;background:var(--surface2);border-radius:var(--radius)">No accounts connected yet.</div>`;
+  } else {
+    wrap.innerHTML = accounts.map(a => `
+      <div class="rb-account-option" data-id="${a.id}" onclick="rbSelectAccount('${a.id}')">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:36px;height:36px;background:var(--accent-light);color:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">${a.institution.substring(0,3).toUpperCase()}</div>
+          <div>
+            <div style="font-size:14px;font-weight:500">${a.institution}</div>
+            <div style="font-size:12px;color:var(--text3)">${a.account_type} · ${a.account_number}</div>
+          </div>
+        </div>
+        <div style="font-size:15px;font-weight:600;color:var(--accent)">${a.formatted}</div>
       </div>
-      <div style="font-size:15px;font-weight:600;color:var(--accent)">${a.formatted}</div>
-    </div>
-  `).join('');
+    `).join('');
+    // Auto-select primary
+    const primary = accounts.find(a => a.is_primary) || accounts[0];
+    if (primary) rbSelectAccount(primary.id);
+  }
 
-  rbGoStep(1);
   openModal('rule-builder-modal');
   lucide.createIcons();
+  setTimeout(() => document.getElementById('rb-rule-input').focus(), 200);
 }
 
 function rbSelectAccount(id) {
-  rb.accountId = id;
+  rbSelectedAccountId = id;
   document.querySelectorAll('.rb-account-option').forEach(el => {
     el.classList.toggle('selected', el.dataset.id === id);
   });
 }
 
-function rbSelectTrigger(type) {
-  rb.trigger = type;
-  rb.triggerConfig = {};
-  document.querySelectorAll('.rb-trigger-card').forEach(c => c.classList.remove('selected'));
-  document.querySelector(`.rb-trigger-card[data-trigger="${type}"]`).classList.add('selected');
-
-  const cfg = document.getElementById('rb-trigger-config');
-  if (type === 'schedule') {
-    cfg.style.display = 'block';
-    cfg.innerHTML = `
-      <label class="form-label">Which day of the month?</label>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
-        ${[1,5,10,15,20,25,28,30].map(d => `
-          <div onclick="rbSelectDay(${d})" data-day="${d}"
-            style="width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;
-            border:1.5px solid var(--border);cursor:pointer;font-size:13px;font-weight:500;transition:all .15s"
-            class="rb-day-btn">
-            ${d}
-          </div>
-        `).join('')}
-      </div>
-    `;
-  } else if (type === 'balance') {
-    cfg.style.display = 'block';
-    cfg.innerHTML = `
-      <label class="form-label">Trigger when balance exceeds</label>
-      <input type="number" class="form-input" style="margin-top:8px" placeholder="e.g. 500000"
-        oninput="rb.triggerConfig={min_amount:parseFloat(this.value)}"/>
-    `;
-  } else if (type === 'deposit') {
-    cfg.style.display = 'block';
-    cfg.innerHTML = `<div style="font-size:13px;color:var(--text2)">This rule will fire automatically when a deposit or salary credit is detected on your account.</div>`;
-    rb.triggerConfig = {};
-  } else {
-    cfg.style.display = 'none';
-    rb.triggerConfig = {};
-  }
-  lucide.createIcons();
+function rbFillExample(btn) {
+  const input = document.getElementById('rb-rule-input');
+  input.value = btn.textContent.trim();
+  input.focus();
+  rbOnInput();
 }
 
-function rbSelectDay(d) {
-  rb.triggerConfig = { day: d };
-  document.querySelectorAll('.rb-day-btn').forEach(el => {
-    const isSelected = parseInt(el.dataset.day) === d;
-    el.style.background = isSelected ? 'var(--accent)' : '';
-    el.style.color = isSelected ? '#fff' : '';
-    el.style.borderColor = isSelected ? 'var(--accent)' : 'var(--border)';
-  });
-}
-
-function rbSelectAmountType(type) {
-  rb.amountType = type;
-  document.querySelectorAll('.rb-amount-type-card').forEach(c => c.classList.remove('selected'));
-  document.querySelector(`.rb-amount-type-card[data-type="${type}"]`).classList.add('selected');
-  const wrap = document.getElementById('rb-amount-input-wrap');
-  if (type === 'full_balance') {
-    wrap.style.display = 'none';
-    rb.amount = null;
-  } else {
-    wrap.style.display = 'block';
-    document.getElementById('rb-amount').placeholder = type === 'percentage' ? 'e.g. 50 (for 50%)' : 'e.g. 1000000';
-  }
-  rbUpdatePreview();
-}
-
-function rbUpdatePreview() {
-  const preview = document.getElementById('rb-amount-preview');
-  const val = document.getElementById('rb-amount')?.value;
-  rb.amount = val ? parseFloat(val) : null;
-
-  if (!val || !rb.amountType) { preview.textContent = ''; return; }
-
-  const acct = accounts.find(a => a.id === rb.accountId);
-  const bal  = acct?.balance || 0;
-
-  if (rb.amountType === 'fixed') {
-    preview.textContent = `₦${Number(val).toLocaleString()} will be debited`;
-  } else if (rb.amountType === 'percentage') {
-    const naira = (bal * parseFloat(val) / 100);
-    preview.textContent = `${val}% of ₦${bal.toLocaleString()} = ₦${naira.toLocaleString()} will be debited`;
-  }
-}
-
-// ── Actions ──
-const ACTION_META = {
-  send_bank:      { label:'Bank Transfer',   icon:'send',        color:'var(--accent)',  bg:'var(--accent-light)' },
-  save_piggyvest: { label:'Save to PiggyVest', icon:'piggy-bank', color:'var(--green)',   bg:'var(--green-bg)' },
-  save_cowrywise: { label:'Save to Cowrywise', icon:'trending-up', color:'var(--purple)',  bg:'var(--purple-bg)' },
-  convert_crypto: { label:'Convert to USDT',  icon:'bitcoin',     color:'var(--orange)',  bg:'var(--orange-bg)' },
-  pay_bill:       { label:'Pay a Bill',        icon:'zap',         color:'var(--red)',     bg:'var(--red-bg)' },
-};
-
-function rbAddAction(type) {
-  const action = { action_type:type, amount_type:'fixed', amount:'', label:'', config:{} };
-  rb.actions.push(action);
-  rbEditingAction = rb.actions.length - 1;
-  rbRenderActions();
-  rbShowActionEditor(rbEditingAction);
-}
-
-function rbRemoveAction(i) {
-  rb.actions.splice(i, 1);
-  rbEditingAction = null;
-  document.getElementById('rb-action-editor').style.display = 'none';
-  rbRenderActions();
-}
-
-function rbRenderActions() {
-  const list = document.getElementById('rb-actions-list');
-  if (rb.actions.length === 0) {
-    list.innerHTML = `<div style="text-align:center;padding:20px;color:var(--text3);font-size:13px;border:2px dashed var(--border);border-radius:var(--radius)">No actions yet — add your first action below</div>`;
+function rbOnInput() {
+  const text = document.getElementById('rb-rule-input').value.trim();
+  if (!text || text.length < 5) {
+    document.getElementById('rb-parse-result').style.display = 'none';
+    rbSetConfirmEnabled(false);
     return;
   }
+  // Debounce 600ms
+  clearTimeout(rbDebounceTimer);
+  rbShowThinking(true);
+  rbDebounceTimer = setTimeout(() => rbParse(text), 600);
+}
 
-  const totalAmount = rb.amountType === 'fixed' ? rb.amount :
-    rb.amountType === 'full_balance' ? (accounts.find(a=>a.id===rb.accountId)?.balance||0) :
-    ((accounts.find(a=>a.id===rb.accountId)?.balance||0) * (rb.amount||0) / 100);
+async function rbParse(text) {
+  try {
+    const res = await api('POST', '/rules/parse', { rule_text: text });
+    rbParsed = res.data;
+    rbShowThinking(false);
+    rbRenderParseResult(rbParsed);
+  } catch(e) {
+    rbShowThinking(false);
+    toast('Parse failed: ' + e.message, 'error');
+  }
+}
 
-  list.innerHTML = rb.actions.map((a, i) => {
-    const meta = ACTION_META[a.action_type];
-    const stepAmount = a.amount_type === 'percentage'
-      ? `${a.amount}% = ₦${((totalAmount * parseFloat(a.amount||0)) / 100).toLocaleString()}`
-      : `₦${Number(a.amount||0).toLocaleString()}`;
+function rbShowThinking(show) {
+  const el = document.getElementById('rb-thinking');
+  el.style.display = show ? 'flex' : 'none';
+}
 
+function rbSetConfirmEnabled(enabled) {
+  const btn = document.getElementById('rb-confirm-btn');
+  btn.style.opacity = enabled ? '1' : '.4';
+  btn.style.pointerEvents = enabled ? 'auto' : 'none';
+}
+
+function rbRenderParseResult(p) {
+  const wrap = document.getElementById('rb-parse-result');
+  wrap.style.display = 'block';
+
+  const confidenceColor = p.confidence >= 80 ? 'var(--green)' : p.confidence >= 50 ? 'var(--orange)' : 'var(--red)';
+  const confidenceBg    = p.confidence >= 80 ? 'var(--green-bg)' : p.confidence >= 50 ? 'var(--orange-bg)' : 'var(--red-bg)';
+
+  const actionMeta = {
+    send_bank:      { icon:'send',        color:'var(--accent)',  bg:'var(--accent-light)', label:'Bank Transfer' },
+    save_piggyvest: { icon:'piggy-bank',  color:'var(--green)',   bg:'var(--green-bg)',     label:'PiggyVest' },
+    save_cowrywise: { icon:'trending-up', color:'var(--purple)',  bg:'var(--purple-bg)',    label:'Cowrywise' },
+    convert_crypto: { icon:'bitcoin',     color:'var(--orange)',  bg:'var(--orange-bg)',    label:'Crypto' },
+    pay_bill:       { icon:'zap',         color:'var(--red)',     bg:'var(--red-bg)',       label:'Bill' },
+  };
+
+  const actionsHTML = p.actions.map((a, i) => {
+    const meta  = actionMeta[a.action_type] || { icon:'circle', color:'var(--text2)', bg:'var(--surface2)', label:a.action_type };
+    const amt   = a.amount_type === 'percentage' ? `${a.amount}%` : `₦${Number(a.amount).toLocaleString()}`;
+    const extra = a.config?.network ? `<span style="font-size:11px;background:var(--surface2);padding:2px 7px;border-radius:99px;color:var(--text2);margin-left:6px">${a.config.network.toUpperCase()}</span>` : '';
+    const dest  = a.config?.contact_label ? `→ ${a.config.contact_label}` :
+                  a.config?.wallet_label  ? `→ ${a.config.wallet_label}` :
+                  a.config?.plan          ? `→ ${a.config.plan}` :
+                  a.config?.provider      ? `→ ${a.config.provider.toUpperCase()}` : '';
     return `
-      <div class="rb-built-action" style="${rbEditingAction===i?'border-color:var(--accent);background:var(--accent-light)':''}">
-        <div class="rb-built-action-icon" style="background:${meta.bg};color:${meta.color}">
-          <i data-lucide="${meta.icon}" style="width:14px;height:14px"></i>
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)">
+        <div style="width:28px;height:28px;border-radius:7px;background:${meta.bg};color:${meta.color};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <i data-lucide="${meta.icon}" style="width:13px;height:13px"></i>
         </div>
-        <div style="flex:1">
-          <div style="font-size:13.5px;font-weight:500">${a.label || meta.label}</div>
-          <div style="font-size:12px;color:var(--text3)">${stepAmount}</div>
+        <div style="flex:1;font-size:13.5px">
+          <span style="font-weight:500">${a.label || meta.label}</span>
+          <span style="color:var(--text3);margin-left:6px">${dest}</span>
+          ${extra}
         </div>
-        <div style="display:flex;gap:6px">
-          <button onclick="rbShowActionEditor(${i})" style="background:none;border:none;cursor:pointer;color:var(--text3);padding:4px">
-            <i data-lucide="pencil" style="width:14px;height:14px"></i>
-          </button>
-          <button onclick="rbRemoveAction(${i})" style="background:none;border:none;cursor:pointer;color:var(--text3);padding:4px">
-            <i data-lucide="trash-2" style="width:14px;height:14px"></i>
-          </button>
-        </div>
+        <div style="font-size:13px;font-weight:600;color:var(--text2)">${amt}</div>
       </div>
     `;
   }).join('');
-  lucide.createIcons();
-}
 
-function rbShowActionEditor(i) {
-  rbEditingAction = i;
-  const a = rb.actions[i];
-  const meta = ACTION_META[a.action_type];
-  const editor = document.getElementById('rb-action-editor');
-  editor.style.display = 'block';
-
-  const totalAmount = rb.amountType === 'fixed' ? rb.amount :
-    rb.amountType === 'full_balance' ? (accounts.find(ac=>ac.id===rb.accountId)?.balance||0) :
-    ((accounts.find(ac=>ac.id===rb.accountId)?.balance||0) * (rb.amount||0) / 100);
-
-  editor.innerHTML = `
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
-      <div style="width:28px;height:28px;border-radius:7px;background:${meta.bg};color:${meta.color};display:flex;align-items:center;justify-content:center">
-        <i data-lucide="${meta.icon}" style="width:14px;height:14px"></i>
-      </div>
-      <div style="font-size:14px;font-weight:600">${meta.label}</div>
+  const warningsHTML = p.warnings.length > 0 ? `
+    <div style="margin-top:12px;display:flex;flex-direction:column;gap:6px">
+      ${p.warnings.map(w => `
+        <div style="display:flex;align-items:flex-start;gap:8px;padding:8px 12px;background:var(--orange-bg);border-radius:var(--radius);border:1px solid #FEC84B">
+          <i data-lucide="alert-triangle" style="width:14px;height:14px;color:var(--orange);flex-shrink:0;margin-top:1px"></i>
+          <div style="font-size:12.5px;color:var(--orange)">${w}</div>
+        </div>
+      `).join('')}
     </div>
-    <div class="form-group">
-      <label class="form-label">Label <span style="color:var(--text3);font-weight:400">(optional)</span></label>
-      <input type="text" class="form-input" placeholder='e.g. "Send to Mama"' value="${a.label}"
-        oninput="rb.actions[${i}].label=this.value;rbRenderActions()"/>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">Amount type</label>
-        <select class="form-select" onchange="rb.actions[${i}].amount_type=this.value;rbShowActionEditor(${i})">
-          <option value="fixed" ${a.amount_type==='fixed'?'selected':''}>Fixed ₦</option>
-          <option value="percentage" ${a.amount_type==='percentage'?'selected':''}>% of total debit</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">${a.amount_type==='percentage'?'Percentage (%)':'Amount (₦)'}</label>
-        <input type="number" class="form-input" placeholder="${a.amount_type==='percentage'?'e.g. 30':'e.g. 50000'}" value="${a.amount}"
-          oninput="rb.actions[${i}].amount=this.value;rbRenderActions()"/>
-      </div>
-    </div>
-    ${rbActionConfigHTML(a, i, totalAmount)}
-    <button class="btn btn-primary btn-sm" onclick="rbEditingAction=null;document.getElementById('rb-action-editor').style.display='none';rbRenderActions()">
-      <i data-lucide="check" style="width:13px;height:13px"></i> Done
-    </button>
-  `;
-  rbRenderActions();
-  lucide.createIcons();
-}
+  ` : '';
 
-function rbActionConfigHTML(a, i, totalAmount) {
-  if (a.action_type === 'send_bank') {
-    const selectedContact = a.config?.contact_id;
-    return `
-      <div class="form-group">
-        <label class="form-label">Send to</label>
-        <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px">
-          ${contacts.length === 0
-            ? `<div style="font-size:13px;color:var(--text3);padding:10px;background:var(--surface2);border-radius:var(--radius)">No contacts saved yet. <a href="#" onclick="closeModal('rule-builder-modal');showPage('contacts')" style="color:var(--accent)">Add a contact first</a></div>`
-            : contacts.map(c => `
-              <div onclick="rb.actions[${i}].config={contact_id:'${c.id}',narration:'${c.label}'};rbShowActionEditor(${i})"
-                style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid ${selectedContact===c.id?'var(--accent)':'var(--border)'};
-                border-radius:var(--radius);cursor:pointer;background:${selectedContact===c.id?'var(--accent-light)':'var(--surface)'}">
-                <div style="width:32px;height:32px;border-radius:50%;background:var(--accent-light);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600">${c.label[0]}</div>
-                <div>
-                  <div style="font-size:13.5px;font-weight:500">${c.label}</div>
-                  <div style="font-size:12px;color:var(--text3)">${c.bank_name} · ${c.account_number}</div>
-                </div>
-                ${selectedContact===c.id?'<i data-lucide="check-circle" style="width:16px;height:16px;color:var(--accent);margin-left:auto"></i>':''}
-              </div>
-            `).join('')
-          }
+  wrap.innerHTML = `
+    <div style="border:1.5px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;animation:fadeUp .2s ease">
+      <!-- Header -->
+      <div style="padding:14px 16px;background:var(--bg);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:8px">
+          <i data-lucide="sparkles" style="width:15px;height:15px;color:var(--accent)"></i>
+          <span style="font-size:13px;font-weight:600;color:var(--text)">Atlas understood this as:</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;padding:3px 10px;border-radius:99px;background:${confidenceBg}">
+          <span style="font-size:12px;font-weight:600;color:${confidenceColor}">${p.confidence}% confident</span>
         </div>
       </div>
-    `;
-  }
-  if (a.action_type === 'save_piggyvest') {
-    return `
-      <div class="form-group">
-        <label class="form-label">Savings plan name</label>
-        <input type="text" class="form-input" placeholder="e.g. Emergency Fund, House Deposit"
-          value="${a.config?.plan||''}" oninput="rb.actions[${i}].config={plan:this.value,note:'Atlas auto-save'}"/>
-        <div style="font-size:12px;color:var(--text3);margin-top:6px">Money will be locked until your target date</div>
+      <!-- Body -->
+      <div style="padding:16px">
+        <!-- Rule name -->
+        <div style="margin-bottom:12px">
+          <div style="font-size:11.5px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Rule name</div>
+          <input type="text" class="form-input" value="${p.name}" style="font-size:14px;font-weight:500"
+            oninput="if(rbParsed) rbParsed.name=this.value"/>
+        </div>
+        <!-- Trigger -->
+        <div style="margin-bottom:12px;padding:10px 14px;background:var(--accent-light);border-radius:var(--radius);display:flex;align-items:center;gap:8px">
+          <i data-lucide="clock" style="width:14px;height:14px;color:var(--accent)"></i>
+          <span style="font-size:13.5px;color:var(--accent);font-weight:500">${p.trigger.label}</span>
+        </div>
+        <!-- Actions -->
+        <div style="font-size:11.5px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Actions</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          ${actionsHTML}
+        </div>
+        ${warningsHTML}
       </div>
-    `;
-  }
-  if (a.action_type === 'save_cowrywise') {
-    return `
-      <div class="form-group">
-        <label class="form-label">Investment plan</label>
-        <input type="text" class="form-input" placeholder="e.g. Dollar Fund, Halal Plan"
-          value="${a.config?.plan||''}" oninput="rb.actions[${i}].config={plan:this.value}"/>
-        <div style="font-size:12px;color:var(--text3);margin-top:6px">Earns ~12% p.a. in Cowrywise investment plans</div>
-      </div>
-    `;
-  }
-  if (a.action_type === 'convert_crypto') {
-    const stepNaira = a.amount_type === 'percentage'
-      ? (totalAmount * parseFloat(a.amount||0) / 100)
-      : parseFloat(a.amount||0);
-    const usdt = (stepNaira / 1620).toFixed(2);
-    return `
-      <div class="form-group">
-        <label class="form-label">Destination wallet (TRC-20 USDT)</label>
-        <input type="text" class="form-input" placeholder="Your Tron/USDT wallet address"
-          value="${a.config?.wallet||''}" oninput="rb.actions[${i}].config={network:'tron',wallet:this.value}"/>
-        ${stepNaira>0?`<div style="font-size:12px;color:var(--text3);margin-top:6px">≈ ${usdt} USDT at current rate (₦1,620/USDT)</div>`:''}
-      </div>
-    `;
-  }
-  if (a.action_type === 'pay_bill') {
-    const provider = a.config?.provider || 'dstv';
-    const providers = [
-      {v:'dstv',l:'DStv'},
-      {v:'gotv',l:'GOtv'},
-      {v:'startimes',l:'Startimes'},
-      {v:'ekedc',l:'EKEDC (Electricity)'},
-      {v:'ikedc',l:'IKEDC (Electricity)'},
-      {v:'aedc',l:'AEDC (Electricity)'},
-      {v:'mtn',l:'MTN Airtime'},
-      {v:'airtel',l:'Airtel Airtime'},
-      {v:'glo',l:'Glo Airtime'},
-      {v:'9mobile',l:'9mobile Airtime'},
-    ];
-    const isTV = ['dstv','gotv','startimes'].includes(provider);
-    const isElec = ['ekedc','ikedc','aedc'].includes(provider);
-    const isAirtime = ['mtn','airtel','glo','9mobile'].includes(provider);
-    return `
-      <div class="form-group">
-        <label class="form-label">Bill provider</label>
-        <select class="form-select" onchange="rb.actions[${i}].config={provider:this.value};rbShowActionEditor(${i})">
-          ${providers.map(p=>`<option value="${p.v}" ${provider===p.v?'selected':''}>${p.l}</option>`).join('')}
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">${isTV?'Smart Card Number':isElec?'Meter Number':isAirtime?'Phone Number':'Account Number'}</label>
-        <input type="text" class="form-input" placeholder="${isTV?'e.g. 1234567890':isElec?'e.g. 45012345678':'+234...'}"
-          value="${a.config?.smart_card||a.config?.meter_number||a.config?.phone||''}"
-          oninput="rb.actions[${i}].config={...rb.actions[${i}].config,smart_card:this.value,meter_number:this.value,phone:this.value}"/>
-      </div>
-      ${isTV?`<div class="form-group">
-        <label class="form-label">Package</label>
-        <select class="form-select" onchange="rb.actions[${i}].config={...rb.actions[${i}].config,package:this.value}">
-          <option value="Premium">Premium (₦29,500)</option>
-          <option value="Compact Plus">Compact Plus (₦16,600)</option>
-          <option value="Compact">Compact (₦9,000)</option>
-          <option value="Yanga">Yanga (₦3,500)</option>
-        </select>
-      </div>`:''}
-    `;
-  }
-  return '';
-}
-
-function rbNext(fromStep) {
-  if (fromStep === 1) {
-    const name = document.getElementById('rb-name').value.trim();
-    if (!name) return toast('Enter a rule name', 'error');
-    if (!rb.accountId) return toast('Select a source account', 'error');
-    rb.name = name;
-    rb.desc = document.getElementById('rb-desc').value.trim();
-    rbMarkDone(1);
-    rbGoStep(2);
-  } else if (fromStep === 2) {
-    if (!rb.trigger) return toast('Choose a trigger', 'error');
-    if (!rb.amountType) return toast('Choose how much to debit', 'error');
-    if (rb.amountType !== 'full_balance' && !rb.amount) return toast('Enter the amount', 'error');
-    if (rb.trigger === 'schedule' && !rb.triggerConfig.day) return toast('Select which day of the month', 'error');
-    rbMarkDone(2);
-    rbGoStep(3);
-  } else if (fromStep === 3) {
-    if (rb.actions.length === 0) return toast('Add at least one action', 'error');
-    rbMarkDone(3);
-    rbGoStep(4);
-    rbRenderReview();
-  }
-}
-
-function rbRenderReview() {
-  const acct = accounts.find(a => a.id === rb.accountId);
-  const triggerLabel = {
-    schedule: `Every month on day ${rb.triggerConfig.day}`,
-    deposit: 'When a deposit/salary arrives',
-    balance: `When balance exceeds ₦${Number(rb.triggerConfig.min_amount||0).toLocaleString()}`,
-    manual: 'Manual trigger',
-  }[rb.trigger];
-  const amountLabel = rb.amountType === 'fixed'
-    ? `₦${Number(rb.amount).toLocaleString()}`
-    : rb.amountType === 'full_balance' ? 'Full available balance'
-    : `${rb.amount}% of balance`;
-
-  document.getElementById('rb-review').innerHTML = `
-    <div class="rb-review-section">
-      <div class="rb-review-label">Rule</div>
-      <div class="rb-review-value">${rb.name}</div>
-      ${rb.desc?`<div class="rb-review-sub">${rb.desc}</div>`:''}
-    </div>
-    <div class="rb-review-section">
-      <div class="rb-review-label">Source account</div>
-      <div class="rb-review-value">${acct?.institution}</div>
-      <div class="rb-review-sub">Debit: ${amountLabel}</div>
-    </div>
-    <div class="rb-review-section">
-      <div class="rb-review-label">Trigger</div>
-      <div class="rb-review-value">${triggerLabel}</div>
-    </div>
-    <div class="rb-review-section">
-      <div class="rb-review-label">Actions (${rb.actions.length} steps)</div>
-      <div style="display:flex;flex-direction:column;gap:6px;margin-top:6px">
-        ${rb.actions.map((a,i) => {
-          const meta = ACTION_META[a.action_type];
-          const amt = a.amount_type==='percentage'?`${a.amount}%`:`₦${Number(a.amount).toLocaleString()}`;
-          return `
-            <div style="display:flex;align-items:center;gap:8px;padding:8px;background:var(--surface);border-radius:8px">
-              <div style="width:24px;height:24px;border-radius:6px;background:${meta.bg};color:${meta.color};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700">${i+1}</div>
-              <div style="flex:1;font-size:13px">${a.label||meta.label}</div>
-              <div style="font-size:13px;font-weight:600;color:var(--text2)">${amt}</div>
-            </div>
-          `;
-        }).join('')}
-      </div>
-    </div>
-    <div style="padding:12px;background:var(--orange-bg);border-radius:var(--radius);border:1px solid #FEC84B;font-size:12.5px;color:var(--orange)">
-      <strong>Rollback enabled:</strong> If any step fails, all previous steps will be automatically reversed.
     </div>
   `;
+
   lucide.createIcons();
+  rbSetConfirmEnabled(p.actions.length > 0);
 }
 
-async function rbSave() {
-  const btn = document.getElementById('rb-save-btn');
+async function rbConfirm() {
+  if (!rbParsed) return;
+  if (!rbSelectedAccountId) return toast('Select an account to debit from', 'error');
+
+  const btn = document.getElementById('rb-confirm-btn');
   btn.innerHTML = '<div class="spinner"></div> Saving...';
-  btn.disabled = true;
+  btn.style.pointerEvents = 'none';
 
   try {
-    const triggerConfig = rb.trigger === 'schedule' ? { day: rb.triggerConfig.day }
-      : rb.trigger === 'balance' ? { min_amount: rb.triggerConfig.min_amount }
-      : {};
+    // Compute total amount from actions for the rule
+    // If all actions are fixed, sum them. If any is percentage, use full_balance type.
+    const hasPercentage = rbParsed.actions.some(a => a.amount_type === 'percentage');
+    const totalFixed    = rbParsed.actions
+      .filter(a => a.amount_type === 'fixed')
+      .reduce((s, a) => s + (parseFloat(a.amount) || 0), 0);
+
+    const totalAmountType  = hasPercentage ? 'full_balance' : 'fixed';
+    const totalAmount      = hasPercentage ? null : totalFixed;
+
+    const triggerType = rbParsed.trigger.type;
+    const triggerMap  = {
+      daily:   'schedule',
+      weekly:  'schedule',
+      hourly:  'schedule',
+      monthly: 'schedule',
+      interval:'schedule',
+      deposit: 'deposit',
+      balance: 'balance',
+      manual:  'manual',
+    };
 
     await api('POST', '/rules', {
-      name: rb.name,
-      description: rb.desc || null,
-      connected_account_id: rb.accountId,
-      trigger_type: rb.trigger,
-      trigger_config: triggerConfig,
-      total_amount_type: rb.amountType,
-      total_amount: rb.amountType !== 'full_balance' ? parseFloat(rb.amount) : null,
-      actions: rb.actions.map((a, i) => ({
+      name:                 rbParsed.name,
+      rule_text:            document.getElementById('rb-rule-input').value.trim(),
+      connected_account_id: rbSelectedAccountId,
+      trigger_type:         triggerMap[triggerType] || triggerType,
+      trigger_config:       { ...rbParsed.trigger.config, frequency: triggerType },
+      total_amount_type:    totalAmountType,
+      total_amount:         totalAmount,
+      actions:              rbParsed.actions.map(a => ({
         action_type: a.action_type,
         amount_type: a.amount_type,
-        amount: parseFloat(a.amount) || 1,
-        label: a.label || ACTION_META[a.action_type].label,
-        config: a.config || {},
-      }))
+        amount:      parseFloat(a.amount) || 1,
+        label:       a.label,
+        config:      a.config || {},
+      })),
     });
 
     closeModal('rule-builder-modal');
-    toast(`Rule "${rb.name}" created`, 'success');
+    toast(`"${rbParsed.name}" saved`, 'success');
     loadRules();
   } catch(e) {
     toast(e.message, 'error');
-    btn.innerHTML = '<i data-lucide="check" style="width:15px;height:15px"></i> Save Rule';
-    btn.disabled = false;
+    btn.innerHTML = '<i data-lucide="check" style="width:15px;height:15px"></i> Confirm Rule';
+    btn.style.pointerEvents = 'auto';
     lucide.createIcons();
   }
-}
-
-function rbGoStep(n) {
-  rb.step = n;
-  for (let i = 1; i <= 4; i++) {
-    const panel = document.getElementById(`rb-panel-${i}`);
-    const tab   = document.querySelector(`.rb-step-tab[data-step="${i}"]`);
-    panel.style.display = i === n ? 'block' : 'none';
-    tab.classList.toggle('active', i === n);
-  }
-  lucide.createIcons();
-}
-
-function rbMarkDone(n) {
-  const tab = document.querySelector(`.rb-step-tab[data-step="${n}"]`);
-  tab.classList.add('done');
-  tab.classList.remove('active');
-  tab.querySelector('.rb-step-num').innerHTML = '<i data-lucide="check" style="width:12px;height:12px"></i>';
-  lucide.createIcons();
 }
 
 // ── Execution Modal ───────────────────────────────────────────────────────
@@ -1736,38 +1376,116 @@ async function syncAccount(id) {
 }
 
 // ── Contacts ──────────────────────────────────────────────────────────────
+let selectedWalletNetwork = null;
+
 async function loadContacts() {
   try {
     const res = await api('GET', '/contacts');
-    contacts = res.data;
-    const grid = document.getElementById('contacts-grid');
+    const all = res.data;
 
-    if (contacts.length === 0) {
-      grid.innerHTML = `<div class="empty" style="grid-column:1/-1;padding:64px">
+    // Split bank vs crypto
+    const bankContacts   = all.filter(c => c.type === 'bank' || (!c.type && c.bank_name));
+    const cryptoWallets  = all.filter(c => c.type === 'crypto' || (!c.type && (c.crypto_network || c.wallet_address)));
+    contacts = bankContacts;
+
+    // Bank contacts grid
+    const grid = document.getElementById('contacts-grid');
+    if (bankContacts.length === 0) {
+      grid.innerHTML = `<div class="empty" style="grid-column:1/-1;padding:32px">
         <div class="empty-icon"><i data-lucide="users" style="width:24px;height:24px;color:var(--text3)"></i></div>
-        <div class="empty-title">No saved contacts</div>
-        <div class="empty-sub">Save people you send money to regularly</div>
+        <div class="empty-title">No bank contacts</div>
+        <div class="empty-sub">Add people you send money to regularly</div>
       </div>`;
-      lucide.createIcons();
-      return;
+    } else {
+      grid.innerHTML = bankContacts.map(c => `
+        <div class="contact-card">
+          <div class="contact-avatar">${c.label[0].toUpperCase()}</div>
+          <div class="contact-info">
+            <div class="contact-label">${c.label}</div>
+            <div class="contact-bank">${c.bank_name || ''}</div>
+            <div class="contact-num">${c.account_number || ''}</div>
+          </div>
+          <button onclick="deleteContact('${c.id}')" style="background:none;border:none;cursor:pointer;color:var(--text3);padding:4px">
+            <i data-lucide="trash-2" style="width:15px;height:15px"></i>
+          </button>
+        </div>
+      `).join('');
     }
 
-    grid.innerHTML = contacts.map(c => `
-      <div class="contact-card">
-        <div class="contact-avatar">${c.label[0].toUpperCase()}</div>
-        <div class="contact-info">
-          <div class="contact-label">${c.label}</div>
-          <div class="contact-bank">${c.bank_name || c.crypto_network || ''}</div>
-          <div class="contact-num">${c.account_number || c.wallet_address || ''}</div>
-        </div>
-        <button onclick="deleteContact('${c.id}')" style="background:none;border:none;cursor:pointer;color:var(--text3);padding:4px">
-          <i data-lucide="trash-2" style="width:15px;height:15px"></i>
-        </button>
-      </div>
-    `).join('');
+    // Wallets grid
+    const wgrid = document.getElementById('wallets-grid');
+    if (cryptoWallets.length === 0) {
+      wgrid.innerHTML = `<div class="empty" style="grid-column:1/-1;padding:32px">
+        <div class="empty-icon"><i data-lucide="bitcoin" style="width:24px;height:24px;color:var(--text3)"></i></div>
+        <div class="empty-title">No crypto wallets</div>
+        <div class="empty-sub">Add wallets so Atlas can send crypto to them in your rules</div>
+      </div>`;
+    } else {
+      const netColors = { bep20:'var(--orange)', trc20:'var(--red)', erc20:'var(--purple)', polygon:'var(--purple)', solana:'var(--green)', arbitrum:'var(--accent)' };
+      const netBgs    = { bep20:'var(--orange-bg)', trc20:'var(--red-bg)', erc20:'var(--purple-bg)', polygon:'var(--purple-bg)', solana:'var(--green-bg)', arbitrum:'var(--accent-light)' };
+      wgrid.innerHTML = cryptoWallets.map(c => {
+        const net = (c.crypto_network || 'crypto').toLowerCase();
+        const color = netColors[net] || 'var(--text2)';
+        const bg    = netBgs[net]    || 'var(--surface2)';
+        const addr  = c.wallet_address || '';
+        const masked = addr.length > 12 ? addr.substring(0,6) + '...' + addr.substring(addr.length-6) : addr;
+        return `
+          <div class="contact-card">
+            <div class="contact-avatar" style="background:${bg};color:${color};font-size:11px;font-weight:700">${(c.crypto_network||'?').toUpperCase().substring(0,3)}</div>
+            <div class="contact-info">
+              <div class="contact-label">${c.label}</div>
+              <div class="contact-bank" style="color:${color}">${(c.crypto_network||'').toUpperCase()}</div>
+              <div class="contact-num">${masked}</div>
+            </div>
+            <button onclick="deleteContact('${c.id}')" style="background:none;border:none;cursor:pointer;color:var(--text3);padding:4px">
+              <i data-lucide="trash-2" style="width:15px;height:15px"></i>
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
     lucide.createIcons();
   } catch(e) {
     toast('Failed to load contacts', 'error');
+  }
+}
+
+function openAddWallet() {
+  selectedWalletNetwork = null;
+  document.getElementById('wallet-label').value = '';
+  document.getElementById('wallet-address').value = '';
+  document.querySelectorAll('#wallet-network-grid .rb-amount-type-card').forEach(el => el.classList.remove('selected'));
+  openModal('wallet-modal');
+}
+
+function selectWalletNetwork(net) {
+  selectedWalletNetwork = net;
+  document.querySelectorAll('#wallet-network-grid .rb-amount-type-card').forEach(el => {
+    el.classList.toggle('selected', el.dataset.net === net);
+  });
+}
+
+async function saveWallet() {
+  const label   = document.getElementById('wallet-label').value.trim();
+  const address = document.getElementById('wallet-address').value.trim();
+  if (!label)               return toast('Enter a wallet label', 'error');
+  if (!selectedWalletNetwork) return toast('Select a network', 'error');
+  if (!address)             return toast('Enter the wallet address', 'error');
+
+  try {
+    await api('POST', '/contacts', {
+      label,
+      type:            'crypto',
+      wallet_address:  address,
+      crypto_network:  selectedWalletNetwork,
+      wallet_label:    label,
+    });
+    closeModal('wallet-modal');
+    toast(`"${label}" wallet saved`, 'success');
+    loadContacts();
+  } catch(e) {
+    toast(e.message, 'error');
   }
 }
 

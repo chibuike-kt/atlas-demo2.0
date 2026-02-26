@@ -19,27 +19,21 @@ class RuleParserController extends Controller
         auth()->shouldUse('api');
     }
 
-    /**
-     * POST /api/rules/parse
-     * Parse plain English rule text into structured config.
-     */
     public function parse(Request $request): JsonResponse
     {
-        $request->validate([
-            'rule_text' => ['required', 'string', 'min:5', 'max:500'],
-        ]);
+        $ruleText = trim((string) $request->input('rule_text', ''));
 
-        $user = auth()->user();
+        if (strlen($ruleText) < 5) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Rule text too short',
+            ], 422);
+        }
 
-        // Get user's contacts and wallets to match against
+        $user     = auth()->user();
         $contacts = $this->contactService->list($user);
         $wallets  = $this->getWallets($user);
-
-        $parsed = $this->parser->parse(
-            $request->rule_text,
-            $contacts,
-            $wallets
-        );
+        $parsed   = $this->parser->parse($ruleText, $contacts, $wallets);
 
         return response()->json([
             'success' => true,
