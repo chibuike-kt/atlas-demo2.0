@@ -2,18 +2,37 @@
 
 namespace App\Services;
 
+/**
+ * FeeService
+ *
+ * Atlas transaction fee engine.
+ *
+ * Fee model:
+ *   Execution fee (all steps):  1–5 steps = ₦20, 6–10 = ₦30, 10+ = ₦50
+ *   Crypto conversion:          FX spread + $0.05 flat per conversion
+ *   Crypto withdrawal:          $0.50 flat per external withdrawal
+ *   Bill payments:              ₦0 to user (Atlas earns biller commission)
+ *   PiggyVest / Cowrywise:      ₦0 (pending partnership)
+ *
+ * Rates are loaded from system_settings table with 1-hour cache.
+ * Falls back to hardcoded defaults if DB unavailable.
+ */
 class FeeService
 {
-  // ── Rates ─────────────────────────────────────────────────────────────────
-  const FIAT_STEP_FEE         = 20.00;   // ₦20 per send_bank step
-  const FIAT_BULK_FEE         = 10.00;   // ₦10 per step when 5+ steps
-  const FIAT_BULK_THRESHOLD   = 5;       // steps needed to trigger bulk rate
-  const CRYPTO_CONVERT_FEE_USD = 0.05;  // $0.05 per conversion
-  const CRYPTO_WITHDRAW_FEE_USD = 0.50; // $0.50 per external withdrawal
-  const USD_NGN_RATE          = 1650.00; // Atlas rate (updated in production via live feed)
+  // ── Execution fee tiers — based on total steps fired ─────────────────────
+  const EXECUTION_FEE_TIERS = [
+    ['min' => 1,  'max' => 5,           'fee' => 20.00],
+    ['min' => 6,  'max' => 10,          'fee' => 30.00],
+    ['min' => 11, 'max' => PHP_INT_MAX, 'fee' => 50.00],
+  ];
 
-  // FX Spread rates
-  const MARKET_RATES = [
+  // ── Crypto fees ───────────────────────────────────────────────────────────
+  const CRYPTO_CONVERT_FEE_USD  = 0.05;  // $0.05 flat per conversion
+  const CRYPTO_WITHDRAW_FEE_USD = 0.50;  // $0.50 flat per withdrawal
+
+  // ── Default rates (fallback if DB/cache unavailable) ─────────────────────
+  const DEFAULT_USD_NGN_RATE   = 1650.00;
+  const DEFAULT_MARKET_RATES   = [
     'USDT' => 1600.00,
     'BTC'  => 96000000.00,
     'ETH'  => 5100000.00,
@@ -21,8 +40,7 @@ class FeeService
     'SOL'  => 170000.00,
     'USDC' => 1600.00,
   ];
-
-  const ATLAS_RATES = [
+  const DEFAULT_ATLAS_RATES    = [
     'USDT' => 1650.00,
     'BTC'  => 98880000.00,
     'ETH'  => 5253000.00,
@@ -31,61 +49,101 @@ class FeeService
     'USDC' => 1650.00,
   ];
 
-  // ── Bank transfer fee ─────────────────────────────────────────────────────
-  // Called once per execution with total send_bank step count
-  public function bankTransferFee(int $sendBankStepCount): array
+  // ── Dynamic rate loading ──────────────────────────────────────────────────
+  // Reads from system_settings table, cached for 1 hour.
+  // In production: update system_settings via admin panel or cron job
+  // that pulls live rates from Binance/Bybit API.
+  private function getRate(string $key, float $default): float
   {
-    if ($sendBankStepCount === 0) {
-      return $this->noFee('fiat_transfer');
+    try {
+      return (float) \Illuminate\Support\Facades\Cache::remember(
+        "atlas_rate_{$key}",
+        3600, // 1 hour cache
+        function () use ($key, $default) {
+          $setting = \Illuminate\Support\Facades\DB::table('system_settings')
+            ->where('key', $key)
+            ->value('value');
+          return $setting ? (float) $setting : $default;
+        }
+      );
+    } catch (\Throwable) {
+      return $default; // Fallback if DB unavailable
+    }
+  }
+
+  private function getUsdNgnRate(): float
+  {
+    return $this->getRate('usd_ngn_rate', self::DEFAULT_USD_NGN_RATE);
+  }
+
+  private function getMarketRate(string $token): float
+  {
+    $default = self::DEFAULT_MARKET_RATES[$token] ?? 1600.00;
+    return $this->getRate("market_rate_{$token}", $default);
+  }
+
+  private function getAtlasRate(string $token): float
+  {
+    $default = self::DEFAULT_ATLAS_RATES[$token] ?? 1650.00;
+    return $this->getRate("atlas_rate_{$token}", $default);
+  }
+
+  // ── Execution fee — one flat charge per execution based on total steps ────
+
+  public function executionFee(int $totalStepCount): array
+  {
+    if ($totalStepCount === 0) {
+      return $this->noFee('execution');
     }
 
-    $ratePerStep = $sendBankStepCount >= self::FIAT_BULK_THRESHOLD
-      ? self::FIAT_BULK_FEE
-      : self::FIAT_STEP_FEE;
+    $fee = 20.00;
+    foreach (self::EXECUTION_FEE_TIERS as $tier) {
+      if ($totalStepCount >= $tier['min'] && $totalStepCount <= $tier['max']) {
+        $fee = $tier['fee'];
+        break;
+      }
+    }
 
-    $totalFee  = $ratePerStep * $sendBankStepCount;
-    $isBulk    = $sendBankStepCount >= self::FIAT_BULK_THRESHOLD;
+    $tierLabel = match (true) {
+      $totalStepCount >= 11 => '11+ steps',
+      $totalStepCount >= 6  => '6–10 steps',
+      default               => '1–5 steps',
+    };
 
     return [
-      'fee_type'        => 'fiat_transfer',
-      'fee_amount_ngn'  => $totalFee,
-      'fee_rate'        => $ratePerStep,
-      'steps'           => $sendBankStepCount,
-      'bulk_discount'   => $isBulk,
-      'user_pays'       => '₦' . number_format($totalFee, 2),
-      'description'     => $isBulk
-        ? "Transfer fee: {$sendBankStepCount} steps × ₦{$ratePerStep} (bulk discount applied)"
-        : "Transfer fee: {$sendBankStepCount} step(s) × ₦{$ratePerStep}",
-      'breakdown'       => $isBulk
-        ? "5+ steps — ₦10/step instead of ₦20/step"
-        : "₦20 per transfer",
+      'fee_type'       => 'execution',
+      'fee_amount_ngn' => $fee,
+      'fee_rate'       => $fee,
+      'steps'          => $totalStepCount,
+      'user_pays'      => '₦' . number_format($fee, 2),
+      'description'    => "Execution fee ({$totalStepCount} step(s) — {$tierLabel})",
+      'breakdown'      => "₦{$fee} flat for {$totalStepCount} step(s) in this execution",
     ];
   }
 
-  // ── Crypto conversion fee ─────────────────────────────────────────────────
-  // NGN → USDT or USDT → NGN
+  // ── Crypto conversion fee — FX spread + $0.05 flat ───────────────────────
+
   public function cryptoConversionFee(float $amountNgn, string $token = 'USDT', string $direction = 'buy'): array
   {
-    $marketRate = self::MARKET_RATES[$token] ?? 1600.00;
-    $atlasRate  = self::ATLAS_RATES[$token]  ?? 1650.00;
+    $marketRate = $this->getMarketRate($token);
+    $atlasRate  = $this->getAtlasRate($token);
+    $usdNgnRate = $this->getUsdNgnRate();
 
-    // $0.05 flat conversion fee in NGN
-    $flatFeeNgn = round(self::CRYPTO_CONVERT_FEE_USD * self::USD_NGN_RATE, 2);
+    // $0.05 flat in NGN at current rate
+    $flatFeeNgn = round(self::CRYPTO_CONVERT_FEE_USD * $usdNgnRate, 2);
+
+    // FX spread calculation
+    $tokensAtMarket = round($amountNgn / $marketRate, 8);
+    $tokensAtAtlas  = round($amountNgn / $atlasRate,  8);
+    $spreadTokens   = round($tokensAtMarket - $tokensAtAtlas, 8);
+    $spreadNgn      = round($spreadTokens * $marketRate, 2);
 
     if ($direction === 'buy') {
-      // NGN → USDT: user gets tokens at Atlas rate (worse rate = spread is Atlas revenue)
-      $tokensAtMarket = round($amountNgn / $marketRate, 8);
-      $tokensAtAtlas  = round($amountNgn / $atlasRate,  8);
-      $spreadTokens   = round($tokensAtMarket - $tokensAtAtlas, 8);
-      $spreadNgn      = round($spreadTokens * $marketRate, 2);
-      $userReceives   = $tokensAtAtlas . ' ' . $token;
+      // NGN → USDT: user gets fewer tokens at Atlas rate
+      $userReceives = $tokensAtAtlas . ' ' . $token;
     } else {
-      // USDT → NGN: Atlas buys at market, gives user Atlas buy rate
-      $tokensAtMarket = round($amountNgn / $marketRate, 8);
-      $tokensAtAtlas  = round($amountNgn / $atlasRate,  8);
-      $spreadTokens   = round($tokensAtMarket - $tokensAtAtlas, 8);
-      $spreadNgn      = round($spreadTokens * $marketRate, 2);
-      $userReceives   = '₦' . number_format($amountNgn - $spreadNgn - $flatFeeNgn, 2);
+      // USDT → NGN: user gets less naira at Atlas rate
+      $userReceives = '₦' . number_format(max(0, $amountNgn - $spreadNgn - $flatFeeNgn), 2);
     }
 
     $totalFeeNgn = round($spreadNgn + $flatFeeNgn, 2);
@@ -99,6 +157,7 @@ class FeeService
       'fee_rate'             => self::CRYPTO_CONVERT_FEE_USD,
       'market_rate'          => $marketRate,
       'atlas_rate'           => $atlasRate,
+      'usd_ngn_rate'         => $usdNgnRate,
       'direction'            => $direction,
       'token'                => $token,
       'user_receives'        => $userReceives,
@@ -108,71 +167,48 @@ class FeeService
     ];
   }
 
-  // ── Crypto withdrawal fee ─────────────────────────────────────────────────
+  // ── Crypto withdrawal — $0.50 flat ────────────────────────────────────────
+
   public function cryptoWithdrawalFee(): array
   {
-    $feeNgn = round(self::CRYPTO_WITHDRAW_FEE_USD * self::USD_NGN_RATE, 2);
+    $usdNgnRate = $this->getUsdNgnRate();
+    $feeNgn     = round(self::CRYPTO_WITHDRAW_FEE_USD * $usdNgnRate, 2);
 
     return [
       'fee_type'       => 'crypto_withdrawal',
       'fee_amount_ngn' => $feeNgn,
       'fee_usd'        => self::CRYPTO_WITHDRAW_FEE_USD,
       'fee_rate'       => self::CRYPTO_WITHDRAW_FEE_USD,
+      'usd_ngn_rate'   => $usdNgnRate,
       'user_pays'      => '$0.50 (₦' . number_format($feeNgn) . ')',
       'description'    => 'Crypto withdrawal fee',
-      'breakdown'      => '$0.50 × ₦' . number_format(self::USD_NGN_RATE) . '/$ = ₦' . number_format($feeNgn),
+      'breakdown'      => '$0.50 × ₦' . number_format($usdNgnRate) . '/$ = ₦' . number_format($feeNgn),
     ];
   }
 
-  // ── Bill payment — ₦0 to user ─────────────────────────────────────────────
-  public function billPaymentFee(): array
-  {
-    return $this->noFee('bill_payment');
-  }
+  // ── Calculate all fees for an execution upfront — for rule builder preview
 
-  // ── No fee ────────────────────────────────────────────────────────────────
-  private function noFee(string $type = 'none'): array
-  {
-    return [
-      'fee_type'       => $type,
-      'fee_amount_ngn' => 0,
-      'fee_rate'       => 0,
-      'user_pays'      => '₦0',
-      'description'    => 'No fee',
-      'breakdown'      => '',
-    ];
-  }
-
-  // ── Calculate fees for entire execution upfront ───────────────────────────
-  // Returns fee breakdown for all steps — used in rule builder preview
   public function calculateForExecution(array $actions): array
   {
-    $sendBankCount = collect($actions)->where('action_type', 'send_bank')->count();
-    $breakdown     = [];
-    $totalFeeNgn   = 0;
+    $totalSteps  = count($actions);
+    $breakdown   = [];
+    $totalFeeNgn = 0;
 
-    // Bank transfer fee (calculated once for all send_bank steps combined)
-    if ($sendBankCount > 0) {
-      $fee = $this->bankTransferFee($sendBankCount);
-      $breakdown[] = $fee;
-      $totalFeeNgn += $fee['fee_amount_ngn'];
+    // One execution fee for all steps combined
+    $execFee = $this->executionFee($totalSteps);
+    if ($execFee['fee_amount_ngn'] > 0) {
+      $breakdown[]  = $execFee;
+      $totalFeeNgn += $execFee['fee_amount_ngn'];
     }
 
-    // Per-action fees for non-bank steps
+    // Per-conversion crypto fee (separate from execution fee)
     foreach ($actions as $action) {
-      $type = $action['action_type'] ?? '';
-      $amt  = (float) ($action['amount'] ?? 0);
-
-      if ($type === 'convert_crypto') {
-        $token = $action['config']['token'] ?? 'USDT';
-        $fee   = $this->cryptoConversionFee($amt, $token);
-        $breakdown[]  = $fee;
+      if (($action['action_type'] ?? '') === 'convert_crypto') {
+        $token       = $action['config']['token'] ?? 'USDT';
+        $amt         = (float) ($action['amount'] ?? 0);
+        $fee         = $this->cryptoConversionFee($amt, $token);
+        $breakdown[] = $fee;
         $totalFeeNgn += $fee['fee_amount_ngn'];
-      }
-
-      if ($type === 'pay_bill') {
-        $breakdown[] = $this->billPaymentFee();
-        // ₦0 — no addition to total
       }
     }
 
@@ -180,16 +216,87 @@ class FeeService
       'total_fee_ngn' => $totalFeeNgn,
       'formatted'     => '₦' . number_format($totalFeeNgn, 2),
       'breakdown'     => $breakdown,
-      'note'          => $this->feeNote($sendBankCount),
+      'note'          => $this->executionFeeNote($totalSteps),
     ];
   }
 
-  private function feeNote(int $sendBankCount): string
+  // ── Execution fee description ─────────────────────────────────────────────
+
+  public function executionFeeDescription(float $fee, int $steps): string
   {
-    if ($sendBankCount === 0) return '';
-    if ($sendBankCount >= self::FIAT_BULK_THRESHOLD) {
-      return "Bulk discount applied — ₦10/transfer instead of ₦20 (5+ transfers)";
-    }
-    return "₦20 per bank transfer";
+    return match ((int) $fee) {
+      50    => "Execution fee — {$steps} steps (₦50 flat, 11+ steps)",
+      30    => "Execution fee — {$steps} steps (₦30 flat, 6–10 steps)",
+      default => "Execution fee — {$steps} steps (₦20 flat, 1–5 steps)",
+    };
+  }
+
+  private function executionFeeNote(int $totalSteps): string
+  {
+    if ($totalSteps === 0) return '';
+    return match (true) {
+      $totalSteps >= 11 => "₦50 flat — 11+ steps in this execution",
+      $totalSteps >= 6  => "₦30 flat — 6–10 steps in this execution",
+      default           => "₦20 flat — 1–5 steps in this execution",
+    };
+  }
+
+  // ── Revenue reporting ─────────────────────────────────────────────────────
+
+  public function totalRevenue(): array
+  {
+    $ledger = \App\Models\FeeLedger::query();
+    return [
+      'all_time'   => '₦' . number_format((float) (clone $ledger)->sum('fee_amount'), 2),
+      'this_month' => '₦' . number_format(
+        (float) (clone $ledger)->whereMonth('created_at', now()->month)->sum('fee_amount'),
+        2
+      ),
+      'by_type'    => (clone $ledger)
+        ->selectRaw('fee_type, SUM(fee_amount) as total, COUNT(*) as count')
+        ->groupBy('fee_type')
+        ->get()
+        ->mapWithKeys(fn($r) => [$r->fee_type => [
+          'total' => '₦' . number_format((float) $r->total, 2),
+          'count' => $r->count,
+        ]])
+        ->toArray(),
+    ];
+  }
+
+  public function userSummary(string $userId): array
+  {
+    $ledger = \App\Models\FeeLedger::where('user_id', $userId);
+    return [
+      'total_paid' => '₦' . number_format((float) (clone $ledger)->sum('fee_amount'), 2),
+      'this_month' => '₦' . number_format(
+        (float) (clone $ledger)->whereMonth('created_at', now()->month)->sum('fee_amount'),
+        2
+      ),
+      'by_type'    => (clone $ledger)
+        ->selectRaw('fee_type, SUM(fee_amount) as total, COUNT(*) as count')
+        ->groupBy('fee_type')
+        ->get()
+        ->mapWithKeys(fn($r) => [$r->fee_type => [
+          'total' => '₦' . number_format((float) $r->total, 2),
+          'count' => $r->count,
+        ]])
+        ->toArray(),
+    ];
+  }
+
+  // ── No fee ────────────────────────────────────────────────────────────────
+
+  private function noFee(string $type = 'none'): array
+  {
+    return [
+      'fee_type'       => $type,
+      'fee_amount_ngn' => 0,
+      'fee_rate'       => 0,
+      'steps'          => 0,
+      'user_pays'      => '₦0',
+      'description'    => 'No fee',
+      'breakdown'      => '',
+    ];
   }
 }
