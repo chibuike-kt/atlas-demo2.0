@@ -8,6 +8,7 @@ use App\Services\EncryptionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+
 class AccountController extends Controller
 {
     public function __construct(

@@ -30,6 +30,8 @@
   --orange-bg:#FFFAEB;
   --purple:#5925DC;
   --purple-bg:#F4F3FF;
+  --teal:#0369A1;
+  --teal-bg:#E0F2FE;
   --radius:10px;
   --radius-lg:14px;
   --shadow:0 1px 3px rgba(16,24,40,.08),0 1px 2px rgba(16,24,40,.06);
@@ -40,45 +42,23 @@
 }
 html{font-size:15px}
 body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.5;min-height:100vh}
-
-/* ── Scrollbar ── */
 ::-webkit-scrollbar{width:5px;height:5px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px}
 
-/* ── Auth Screen ── */
-#auth-screen{
-  min-height:100vh;display:flex;align-items:center;justify-content:center;
-  background:linear-gradient(135deg,#EBF3FF 0%,#F7F8FA 50%,#F0F2F5 100%);
-  padding:24px;
-}
-.auth-card{
-  background:var(--surface);border-radius:20px;padding:48px 40px;
-  width:100%;max-width:420px;box-shadow:var(--shadow-lg);
-  border:1px solid var(--border);
-}
+/* ── Auth ── */
+#auth-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#EBF3FF 0%,#F7F8FA 50%,#F0F2F5 100%);padding:24px}
+.auth-card{background:var(--surface);border-radius:20px;padding:48px 40px;width:100%;max-width:420px;box-shadow:var(--shadow-lg);border:1px solid var(--border)}
 .auth-logo{display:flex;align-items:center;gap:10px;margin-bottom:32px}
-.auth-logo-mark{
-  width:40px;height:40px;background:var(--accent);border-radius:10px;
-  display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:700;
-  font-family:var(--mono);
-}
+.auth-logo-mark{width:40px;height:40px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:700;font-family:var(--mono)}
 .auth-logo-name{font-size:22px;font-weight:600;letter-spacing:-0.3px}
 .auth-tagline{color:var(--text2);font-size:13px;margin-bottom:32px}
 .auth-tagline strong{color:var(--text)}
 .form-group{margin-bottom:18px}
 .form-label{display:block;font-size:13px;font-weight:500;color:var(--text2);margin-bottom:6px}
-.form-input{
-  width:100%;padding:10px 14px;border:1.5px solid var(--border2);border-radius:var(--radius);
-  font-family:var(--font);font-size:14px;color:var(--text);background:var(--surface);
-  transition:border-color .15s,box-shadow .15s;outline:none;
-}
+.form-input{width:100%;padding:10px 14px;border:1.5px solid var(--border2);border-radius:var(--radius);font-family:var(--font);font-size:14px;color:var(--text);background:var(--surface);transition:border-color .15s,box-shadow .15s;outline:none}
 .form-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(15,111,222,.1)}
-.btn{
-  display:inline-flex;align-items:center;justify-content:center;gap:8px;
-  padding:10px 18px;border-radius:var(--radius);font-family:var(--font);font-size:14px;
-  font-weight:500;cursor:pointer;border:none;transition:all .15s;text-decoration:none;
-}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 18px;border-radius:var(--radius);font-family:var(--font);font-size:14px;font-weight:500;cursor:pointer;border:none;transition:all .15s;text-decoration:none}
 .btn-primary{background:var(--accent);color:#fff}
 .btn-primary:hover{background:var(--accent-dark)}
 .btn-secondary{background:var(--surface);color:var(--text);border:1.5px solid var(--border2)}
@@ -91,102 +71,68 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 .btn-full{width:100%}
 .btn-sm{padding:7px 14px;font-size:13px}
 .btn:disabled{opacity:.5;cursor:not-allowed}
-.auth-hint{
-  margin-top:20px;padding:14px;background:var(--accent-light);border-radius:var(--radius);
-  font-size:12.5px;color:var(--accent);border:1px solid rgba(15,111,222,.15);
-}
+.auth-hint{margin-top:20px;padding:14px;background:var(--accent-light);border-radius:var(--radius);font-size:12.5px;color:var(--accent);border:1px solid rgba(15,111,222,.15)}
 .auth-hint code{font-family:var(--mono);font-size:12px}
-.auth-error{
-  padding:12px 14px;background:var(--red-bg);border-radius:var(--radius);
-  font-size:13px;color:var(--red);margin-bottom:16px;display:none;border:1px solid #FDA29B;
-}
+.auth-error{padding:12px 14px;background:var(--red-bg);border-radius:var(--radius);font-size:13px;color:var(--red);margin-bottom:16px;display:none;border:1px solid #FDA29B}
 
 /* ── App Layout ── */
 #app{display:none;min-height:100vh;flex-direction:column}
-.topbar{
-  background:var(--surface);border-bottom:1px solid var(--border);
-  padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;
-  position:sticky;top:0;z-index:100;
-}
-.topbar-left{display:flex;align-items:center;gap:32px}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar-left{display:flex;align-items:center;gap:24px}
 .logo{display:flex;align-items:center;gap:9px;text-decoration:none;color:var(--text)}
-.logo-mark{
-  width:32px;height:32px;background:var(--accent);border-radius:8px;
-  display:flex;align-items:center;justify-content:center;color:#fff;
-  font-size:14px;font-weight:700;font-family:var(--mono);
-}
+.logo-mark{width:32px;height:32px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700;font-family:var(--mono)}
 .logo-name{font-size:17px;font-weight:600;letter-spacing:-0.3px}
 .nav{display:flex;align-items:center;gap:2px}
-.nav-item{
-  padding:6px 14px;border-radius:8px;font-size:13.5px;font-weight:500;color:var(--text2);
-  cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:7px;
-}
+.nav-item{padding:6px 12px;border-radius:8px;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:6px}
 .nav-item:hover{background:var(--surface2);color:var(--text)}
 .nav-item.active{background:var(--accent-light);color:var(--accent)}
-.nav-item i{width:16px;height:16px}
+.nav-item i{width:15px;height:15px}
 .topbar-right{display:flex;align-items:center;gap:12px}
-.user-chip{
-  display:flex;align-items:center;gap:8px;padding:5px 12px 5px 5px;
-  background:var(--surface2);border-radius:99px;cursor:pointer;
-  transition:background .15s;
-}
+.user-chip{display:flex;align-items:center;gap:8px;padding:5px 12px 5px 5px;background:var(--surface2);border-radius:99px;cursor:pointer;transition:background .15s}
 .user-chip:hover{background:var(--border)}
-.user-avatar{
-  width:28px;height:28px;background:var(--accent);border-radius:50%;
-  display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:600;
-}
+.user-avatar{width:28px;height:28px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:600}
 .user-name{font-size:13px;font-weight:500}
 
-/* ── Page Container ── */
+/* ── Pages ── */
 .page{display:none;padding:32px 24px;max-width:1100px;margin:0 auto;width:100%}
 .page.active{display:block}
 .page-header{margin-bottom:28px}
 .page-title{font-size:22px;font-weight:600;letter-spacing:-0.3px;color:var(--text)}
 .page-sub{font-size:14px;color:var(--text2);margin-top:3px}
-
-/* ── Cards ── */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;box-shadow:var(--shadow)}
 .card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
 .card-title{font-size:14px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px}
 
-/* ── Stat Cards ── */
+/* ── Stats ── */
 .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
 .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;box-shadow:var(--shadow)}
 .stat-label{font-size:12.5px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
-.stat-value{font-size:26px;font-weight:600;letter-spacing:-1px;color:var(--text);line-height:1}
+.stat-value{font-size:24px;font-weight:600;letter-spacing:-1px;color:var(--text);line-height:1}
 .stat-sub{font-size:12px;color:var(--text3);margin-top:6px}
-.stat-icon{
-  width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;
-}
+.stat-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:12px}
 .stat-icon.blue{background:var(--accent-light);color:var(--accent)}
 .stat-icon.green{background:var(--green-bg);color:var(--green)}
 .stat-icon.purple{background:var(--purple-bg);color:var(--purple)}
 .stat-icon.orange{background:var(--orange-bg);color:var(--orange)}
+.stat-icon.teal{background:var(--teal-bg);color:var(--teal)}
 
-/* ── Grid layouts ── */
+/* ── Grids ── */
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
 .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
 
 /* ── Account Cards ── */
-.account-card{
-  background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-lg);
-  padding:20px;cursor:pointer;transition:all .15s;
-}
+.account-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-lg);padding:20px;transition:all .15s}
 .account-card:hover{border-color:var(--accent);box-shadow:var(--shadow-md)}
 .account-card.primary{border-color:var(--accent);background:linear-gradient(135deg,#EBF3FF,#fff)}
 .account-bank{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-.bank-logo{
-  width:36px;height:36px;background:var(--surface2);border-radius:8px;
-  display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;
-  color:var(--text2);
-}
+.bank-logo{width:36px;height:36px;background:var(--surface2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--text2)}
 .account-balance{font-size:24px;font-weight:600;letter-spacing:-0.5px;color:var(--text)}
 .account-number{font-family:var(--mono);font-size:12px;color:var(--text3);margin-top:4px}
 .account-meta{display:flex;align-items:center;justify-content:space-between;margin-top:12px}
 .account-type{font-size:11.5px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.5px}
-.badge{
-  padding:2px 8px;border-radius:99px;font-size:11.5px;font-weight:500;
-}
+
+/* ── Badges ── */
+.badge{padding:2px 8px;border-radius:99px;font-size:11.5px;font-weight:500}
 .badge-green{background:var(--green-bg);color:var(--green)}
 .badge-blue{background:var(--accent-light);color:var(--accent)}
 .badge-orange{background:var(--orange-bg);color:var(--orange)}
@@ -195,28 +141,15 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 .badge-gray{background:var(--surface2);color:var(--text2)}
 
 /* ── Rule Cards ── */
-.rule-card{
-  background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-lg);
-  padding:20px;transition:all .15s;
-}
+.rule-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-lg);padding:20px;transition:all .15s}
 .rule-card:hover{border-color:var(--border2);box-shadow:var(--shadow-md)}
 .rule-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
 .rule-name{font-size:15px;font-weight:600;color:var(--text)}
 .rule-desc{font-size:13px;color:var(--text2);margin-top:2px}
-.rule-trigger{
-  display:inline-flex;align-items:center;gap:6px;padding:4px 10px;
-  background:var(--surface2);border-radius:99px;font-size:12px;color:var(--text2);margin-bottom:12px;
-}
+.rule-trigger{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:var(--surface2);border-radius:99px;font-size:12px;color:var(--text2);margin-bottom:12px}
 .rule-actions-list{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
-.rule-action-item{
-  display:flex;align-items:center;gap:8px;padding:8px 12px;
-  background:var(--bg);border-radius:8px;font-size:13px;
-}
-.step-dot{
-  width:20px;height:20px;border-radius:50%;background:var(--accent-light);
-  display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;
-  color:var(--accent);flex-shrink:0;
-}
+.rule-action-item{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg);border-radius:8px;font-size:13px}
+.step-dot{width:20px;height:20px;border-radius:50%;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--accent);flex-shrink:0}
 .rule-footer{display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:1px solid var(--border)}
 .rule-stats{display:flex;align-items:center;gap:16px}
 .rule-stat{font-size:12px;color:var(--text3);display:flex;align-items:center;gap:4px}
@@ -225,33 +158,17 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 /* ── Toggle ── */
 .toggle{position:relative;width:40px;height:22px;cursor:pointer}
 .toggle input{opacity:0;width:0;height:0}
-.toggle-track{
-  position:absolute;top:0;left:0;right:0;bottom:0;
-  background:var(--border2);border-radius:99px;transition:background .2s;
-}
+.toggle-track{position:absolute;top:0;left:0;right:0;bottom:0;background:var(--border2);border-radius:99px;transition:background .2s}
 .toggle input:checked+.toggle-track{background:var(--accent)}
-.toggle-thumb{
-  position:absolute;top:3px;left:3px;width:16px;height:16px;
-  background:#fff;border-radius:50%;transition:transform .2s;
-  box-shadow:0 1px 3px rgba(0,0,0,.2);
-}
+.toggle-thumb{position:absolute;top:3px;left:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
 .toggle input:checked~.toggle-thumb{transform:translateX(18px)}
 
-/* ── Execution Pipeline ── */
+/* ── Pipeline ── */
 .pipeline{display:flex;flex-direction:column;gap:0}
-.pipeline-step{
-  display:flex;gap:16px;position:relative;
-}
-.pipeline-step:not(:last-child)::before{
-  content:'';position:absolute;left:15px;top:32px;bottom:-8px;
-  width:2px;background:var(--border);z-index:0;
-}
+.pipeline-step{display:flex;gap:16px;position:relative}
+.pipeline-step:not(:last-child)::before{content:'';position:absolute;left:15px;top:32px;bottom:-8px;width:2px;background:var(--border);z-index:0}
 .pipeline-step.completed::before{background:var(--green)}
-.step-icon-wrap{
-  width:32px;height:32px;border-radius:50%;border:2px solid var(--border);
-  background:var(--surface);display:flex;align-items:center;justify-content:center;
-  flex-shrink:0;position:relative;z-index:1;transition:all .3s;
-}
+.step-icon-wrap{width:32px;height:32px;border-radius:50%;border:2px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;z-index:1;transition:all .3s}
 .pipeline-step.completed .step-icon-wrap{border-color:var(--green);background:var(--green-bg);color:var(--green)}
 .pipeline-step.running .step-icon-wrap{border-color:var(--accent);background:var(--accent-light);color:var(--accent)}
 .pipeline-step.failed .step-icon-wrap{border-color:var(--red);background:var(--red-bg);color:var(--red)}
@@ -259,21 +176,14 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 .step-label{font-size:14px;font-weight:500;color:var(--text);margin-bottom:4px}
 .step-amount{font-size:13px;font-weight:600;color:var(--text2)}
 .step-ref{font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:4px}
-.step-detail{
-  margin-top:8px;padding:10px 12px;background:var(--bg);border-radius:8px;
-  font-size:12.5px;color:var(--text2);
-}
+.step-detail{margin-top:8px;padding:10px 12px;background:var(--bg);border-radius:8px;font-size:12.5px;color:var(--text2)}
 .step-detail-row{display:flex;justify-content:space-between;padding:2px 0}
 .step-detail-key{color:var(--text3)}
 .step-detail-val{font-family:var(--mono);font-size:12px;color:var(--text)}
 
-/* ── Ledger ── */
+/* ── Ledger table ── */
 .ledger-table{width:100%;border-collapse:collapse}
-.ledger-table th{
-  text-align:left;padding:10px 14px;font-size:11.5px;font-weight:600;
-  color:var(--text3);text-transform:uppercase;letter-spacing:.5px;
-  border-bottom:1px solid var(--border);background:var(--bg);
-}
+.ledger-table th{text-align:left;padding:10px 14px;font-size:11.5px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);background:var(--bg)}
 .ledger-table td{padding:12px 14px;font-size:13.5px;border-bottom:1px solid var(--border)}
 .ledger-table tr:last-child td{border-bottom:none}
 .ledger-table tr:hover td{background:var(--bg)}
@@ -282,135 +192,78 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 .ref-code{font-family:var(--mono);font-size:11.5px;color:var(--text3)}
 
 /* ── Contact Cards ── */
-.contact-card{
-  display:flex;align-items:center;gap:14px;padding:14px 16px;
-  background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-lg);
-  transition:all .15s;
-}
+.contact-card{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-lg);transition:all .15s}
 .contact-card:hover{border-color:var(--border2);box-shadow:var(--shadow)}
-.contact-avatar{
-  width:40px;height:40px;border-radius:50%;background:var(--accent-light);
-  display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;
-  color:var(--accent);flex-shrink:0;
-}
+.contact-avatar{width:40px;height:40px;border-radius:50%;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;color:var(--accent);flex-shrink:0}
 .contact-info{flex:1}
 .contact-label{font-size:14px;font-weight:600;color:var(--text)}
 .contact-bank{font-size:12.5px;color:var(--text2);margin-top:1px}
 .contact-num{font-family:var(--mono);font-size:12px;color:var(--text3)}
 
+/* ── Atlas Wallet Cards ── */
+.wallet-balance-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-lg);padding:20px;position:relative;overflow:hidden;transition:all .15s}
+.wallet-balance-card:hover{border-color:var(--border2);box-shadow:var(--shadow-md)}
+.wallet-balance-card::after{content:'';position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;background:var(--accent);opacity:.04}
+.wallet-net-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
+.wallet-token-amount{font-size:26px;font-weight:700;letter-spacing:-1px;line-height:1;color:var(--text)}
+.wallet-token-sym{font-size:14px;font-weight:500;color:var(--text3);margin-left:4px}
+.wallet-addr{font-family:var(--mono);font-size:10.5px;color:var(--text3);margin-top:12px;padding:8px 10px;background:var(--bg);border-radius:8px;word-break:break-all;cursor:pointer;transition:background .15s;border:1px solid var(--border)}
+.wallet-addr:hover{background:var(--surface2)}
+
+/* ── Fee Preview ── */
+.fee-preview-box{padding:12px 16px;background:var(--accent-light);border:1px solid rgba(15,111,222,.2);border-radius:var(--radius);margin-top:14px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.fee-preview-label{font-size:13px;color:var(--text2);display:flex;align-items:center;gap:7px}
+.fee-preview-amount{font-size:16px;font-weight:700;color:var(--accent);font-family:var(--mono);white-space:nowrap}
+.fee-breakdown-line{font-size:12px;color:var(--text3);margin-top:6px;padding:0 4px}
+
+/* ── Receipt row ── */
+.receipt-view-btn{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:7px;font-size:12px;font-weight:500;color:var(--accent);background:var(--accent-light);border:none;cursor:pointer;transition:all .15s}
+.receipt-view-btn:hover{background:#DBEAFE}
+
 /* ── Modal ── */
-.modal-overlay{
-  position:fixed;inset:0;background:rgba(16,24,40,.5);
-  display:flex;align-items:center;justify-content:center;z-index:1000;
-  padding:24px;opacity:0;pointer-events:none;transition:opacity .2s;
-}
+.modal-overlay{position:fixed;inset:0;background:rgba(16,24,40,.5);display:flex;align-items:center;justify-content:center;z-index:1000;padding:24px;opacity:0;pointer-events:none;transition:opacity .2s}
 .modal-overlay.open{opacity:1;pointer-events:all}
-.modal{
-  background:var(--surface);border-radius:16px;padding:28px;width:100%;max-width:540px;
-  max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg);
-  transform:translateY(8px);transition:transform .2s;
-}
+.modal{background:var(--surface);border-radius:16px;padding:28px;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg);transform:translateY(8px);transition:transform .2s}
 .modal-overlay.open .modal{transform:translateY(0)}
 .modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
 .modal-title{font-size:17px;font-weight:600;letter-spacing:-0.3px}
-.modal-close{
-  width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;
-  cursor:pointer;color:var(--text3);transition:all .15s;background:transparent;border:none;
-}
+.modal-close{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text3);transition:all .15s;background:transparent;border:none}
 .modal-close:hover{background:var(--surface2);color:var(--text)}
-.action-builder{display:flex;flex-direction:column;gap:10px}
-.action-item-builder{
-  border:1.5px solid var(--border);border-radius:var(--radius);padding:14px;
-  background:var(--bg);
-}
-.action-item-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-.action-step-num{
-  width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;
-  font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;font-family:var(--mono);
-}
-.add-action-btn{
-  display:flex;align-items:center;justify-content:center;gap:8px;
-  padding:12px;border:2px dashed var(--border2);border-radius:var(--radius);
-  font-size:13.5px;color:var(--text3);cursor:pointer;transition:all .15s;background:transparent;width:100%;
-}
-.add-action-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light)}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.form-select{
-  width:100%;padding:10px 14px;border:1.5px solid var(--border2);border-radius:var(--radius);
-  font-family:var(--font);font-size:14px;color:var(--text);background:var(--surface);
-  transition:border-color .15s;outline:none;cursor:pointer;
-}
+.form-select{width:100%;padding:10px 14px;border:1.5px solid var(--border2);border-radius:var(--radius);font-family:var(--font);font-size:14px;color:var(--text);background:var(--surface);transition:border-color .15s;outline:none;cursor:pointer}
 .form-select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(15,111,222,.1)}
 .divider{height:1px;background:var(--border);margin:20px 0}
-
-/* ── Device contacts picker ── */
-.device-contact-item{
-  display:flex;align-items:center;gap:12px;padding:10px 14px;
-  border-radius:var(--radius);cursor:pointer;transition:background .15s;
-}
+.device-contact-item{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:var(--radius);cursor:pointer;transition:background .15s}
 .device-contact-item:hover{background:var(--accent-light)}
-.device-avatar{
-  width:36px;height:36px;border-radius:50%;background:var(--surface2);
-  display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--text2);
-}
+.device-avatar{width:36px;height:36px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--text2)}
+.rb-example-pill{padding:4px 10px;border:1px solid var(--border2);border-radius:99px;font-size:11.5px;color:var(--text2);cursor:pointer;background:var(--surface);transition:all .15s;font-family:var(--font)}
+.rb-example-pill:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light)}
+.rb-account-option{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:all .15s}
+.rb-account-option:hover{border-color:var(--border2)}
+.rb-account-option.selected{border-color:var(--accent);background:var(--accent-light)}
+.rb-net-card{border:1.5px solid var(--border);border-radius:var(--radius);padding:10px 12px;cursor:pointer;transition:all .15s;text-align:center}
+.rb-net-card:hover{border-color:var(--border2)}
+.rb-net-card.selected{border-color:var(--accent);background:var(--accent-light)}
 
 /* ── Toast ── */
 .toast-container{position:fixed;bottom:24px;right:24px;display:flex;flex-direction:column;gap:8px;z-index:2000}
-.toast{
-  padding:12px 16px;border-radius:var(--radius);font-size:13.5px;font-weight:500;
-  box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:10px;
-  animation:slideIn .2s ease;max-width:320px;
-}
+.toast{padding:12px 16px;border-radius:var(--radius);font-size:13.5px;font-weight:500;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:10px;animation:slideIn .2s ease;max-width:320px}
 .toast.success{background:#fff;color:var(--green);border:1px solid #A9EFC5}
 .toast.error{background:#fff;color:var(--red);border:1px solid #FDA29B}
 .toast.info{background:#fff;color:var(--accent);border:1px solid #84CAFF}
 @keyframes slideIn{from{transform:translateX(20px);opacity:0}to{transform:translateX(0);opacity:1}}
-
-/* ── Loading ── */
-.spinner{
-  width:18px;height:18px;border:2.5px solid rgba(255,255,255,.3);
-  border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;
-}
+.spinner{width:18px;height:18px;border:2.5px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
 .spinner.dark{border-color:rgba(15,111,222,.2);border-top-color:var(--accent)}
 @keyframes spin{to{transform:rotate(360deg)}}
 .skeleton{background:linear-gradient(90deg,var(--surface2) 25%,var(--border) 50%,var(--surface2) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:6px;height:14px}
 @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
-
-/* ── Empty state ── */
 .empty{text-align:center;padding:48px 24px;color:var(--text3)}
 .empty-icon{margin:0 auto 12px;width:48px;height:48px;background:var(--surface2);border-radius:12px;display:flex;align-items:center;justify-content:center}
 .empty-title{font-size:15px;font-weight:600;color:var(--text2);margin-bottom:4px}
 .empty-sub{font-size:13px}
-
-/* ── Execution result ── */
-.exec-result{
-  margin-top:20px;border:1.5px solid var(--border);border-radius:var(--radius-lg);
-  overflow:hidden;animation:fadeUp .3s ease;
-}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.exec-result-header{
-  padding:14px 20px;background:var(--bg);border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;
-}
-.exec-result-body{padding:20px}
 
-/* ── Rule Builder (NLP) ── */
-.rb-example-pill{
-  padding:4px 10px;border:1px solid var(--border2);border-radius:99px;
-  font-size:11.5px;color:var(--text2);cursor:pointer;background:var(--surface);
-  transition:all .15s;font-family:var(--font);
-}
-.rb-example-pill:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light)}
-.rb-account-option{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--radius);
-  cursor:pointer;transition:all .15s;
-}
-.rb-account-option:hover{border-color:var(--border2)}
-.rb-account-option.selected{border-color:var(--accent);background:var(--accent-light)}
-
-/* ── Responsive ── */
-@media(max-width:768px){
+@media(max-width:900px){
   .stats-grid{grid-template-columns:1fr 1fr}
   .grid-2,.grid-3{grid-template-columns:1fr}
   .nav-item span{display:none}
@@ -451,6 +304,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 
 <!-- ── App ── -->
 <div id="app">
+
   <!-- Topbar -->
   <div class="topbar">
     <div class="topbar-left">
@@ -465,6 +319,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
         <div class="nav-item" onclick="showPage('rules')" data-page="rules">
           <i data-lucide="git-branch"></i><span>Rules</span>
         </div>
+        <div class="nav-item" onclick="showPage('wallet')" data-page="wallet">
+          <i data-lucide="bitcoin"></i><span>Wallet</span>
+        </div>
         <div class="nav-item" onclick="showPage('accounts')" data-page="accounts">
           <i data-lucide="landmark"></i><span>Accounts</span>
         </div>
@@ -473,6 +330,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
         </div>
         <div class="nav-item" onclick="showPage('ledger')" data-page="ledger">
           <i data-lucide="receipt"></i><span>Ledger</span>
+        </div>
+        <div class="nav-item" onclick="showPage('receipts')" data-page="receipts">
+          <i data-lucide="file-text"></i><span>Receipts</span>
         </div>
       </nav>
     </div>
@@ -488,13 +348,12 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
   <!-- Pages -->
   <div style="flex:1">
 
-    <!-- Dashboard -->
+    <!-- ── Dashboard ── -->
     <div class="page active" id="page-dashboard">
       <div class="page-header">
-        <div class="page-title" id="dash-greeting">Good morning, Kingsley</div>
+        <div class="page-title" id="dash-greeting">Good morning</div>
         <div class="page-sub">Here's your financial overview</div>
       </div>
-
       <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-icon blue"><i data-lucide="wallet" style="width:18px;height:18px"></i></div>
@@ -515,13 +374,12 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
           <div class="stat-sub" id="stat-rules-sub">of — total</div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon orange"><i data-lucide="users" style="width:18px;height:18px"></i></div>
-          <div class="stat-label">Saved Contacts</div>
-          <div class="stat-value" id="stat-contacts">—</div>
-          <div class="stat-sub">Quick send recipients</div>
+          <div class="stat-icon teal"><i data-lucide="coins" style="width:18px;height:18px"></i></div>
+          <div class="stat-label">USDT Balance</div>
+          <div class="stat-value" id="stat-usdt">0.00</div>
+          <div class="stat-sub" id="stat-fees-month">₦— fees this month</div>
         </div>
       </div>
-
       <div class="grid-2">
         <div class="card">
           <div class="card-header">
@@ -547,7 +405,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
       </div>
     </div>
 
-    <!-- Rules -->
+    <!-- ── Rules ── -->
     <div class="page" id="page-rules">
       <div class="page-header" style="display:flex;align-items:center;justify-content:space-between">
         <div>
@@ -561,7 +419,33 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
       <div id="rules-list" class="grid-2"></div>
     </div>
 
-    <!-- Accounts -->
+    <!-- ── Atlas Wallet ── -->
+    <div class="page" id="page-wallet">
+      <div class="page-header">
+        <div class="page-title">Atlas Wallet</div>
+        <div class="page-sub">Your in-app crypto balances — deposit crypto to use in rules, or let conversions fund it automatically</div>
+      </div>
+
+      <!-- Info banner -->
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:16px 20px;background:var(--accent-light);border:1px solid rgba(15,111,222,.15);border-radius:var(--radius-lg);margin-bottom:28px">
+        <i data-lucide="info" style="width:17px;height:17px;color:var(--accent);flex-shrink:0;margin-top:2px"></i>
+        <div style="font-size:13.5px;color:var(--text2)"><strong style="color:var(--accent)">How it works:</strong> Send USDT to your Atlas deposit address below. Atlas holds it in custody. Your rules can convert NGN → USDT (funding your wallet) or send USDT to external wallets. Withdrawals to external wallets cost <strong>$0.50</strong>.</div>
+      </div>
+
+      <!-- Balances -->
+      <div style="font-size:11.5px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:14px">Current Balances</div>
+      <div id="wallet-balances-grid" class="grid-3" style="margin-bottom:32px">
+        <div class="skeleton" style="height:130px;border-radius:14px"></div>
+        <div class="skeleton" style="height:130px;border-radius:14px"></div>
+        <div class="skeleton" style="height:130px;border-radius:14px"></div>
+      </div>
+
+      <!-- Deposit addresses -->
+      <div style="font-size:11.5px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:14px">Deposit Addresses</div>
+      <div id="wallet-deposit-grid" class="grid-3"></div>
+    </div>
+
+    <!-- ── Accounts ── -->
     <div class="page" id="page-accounts">
       <div class="page-header">
         <div class="page-title">Connected Accounts</div>
@@ -570,7 +454,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
       <div id="accounts-grid" class="grid-3"></div>
     </div>
 
-    <!-- Contacts -->
+    <!-- ── Contacts ── -->
     <div class="page" id="page-contacts">
       <div class="page-header" style="display:flex;align-items:center;justify-content:space-between">
         <div>
@@ -589,28 +473,24 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
           </button>
         </div>
       </div>
-      <div style="font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Bank Contacts</div>
+      <div style="font-size:11.5px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:14px">Bank Contacts</div>
       <div id="contacts-grid" class="grid-3" style="margin-bottom:28px"></div>
-      <div style="font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Crypto Wallets</div>
+      <div style="font-size:11.5px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:14px">External Crypto Wallets</div>
       <div id="wallets-grid" class="grid-3"></div>
     </div>
 
-    <!-- Ledger -->
+    <!-- ── Ledger ── -->
     <div class="page" id="page-ledger">
       <div class="page-header">
         <div class="page-title">Transaction Ledger</div>
         <div class="page-sub">Every naira in and out, double-entry recorded</div>
       </div>
       <div class="card" style="padding:0;overflow:hidden">
-        <table class="ledger-table" id="ledger-table">
+        <table class="ledger-table">
           <thead>
             <tr>
-              <th>Type</th>
-              <th>Description</th>
-              <th>Amount</th>
-              <th>Currency</th>
-              <th>Reference</th>
-              <th>Date</th>
+              <th>Type</th><th>Description</th><th>Amount</th>
+              <th>Currency</th><th>Reference</th><th>Date</th>
             </tr>
           </thead>
           <tbody id="ledger-body"></tbody>
@@ -618,10 +498,27 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
       </div>
     </div>
 
+    <!-- ── Receipts ── -->
+    <div class="page" id="page-receipts">
+      <div class="page-header">
+        <div class="page-title">Receipts</div>
+        <div class="page-sub">Auto-generated receipt for every rule execution</div>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <table class="ledger-table">
+          <thead>
+            <tr>
+              <th>Receipt No.</th><th>Rule</th><th>Amount</th>
+              <th>Fees Paid</th><th>Status</th><th>Date</th><th></th>
+            </tr>
+          </thead>
+          <tbody id="receipts-body"></tbody>
+        </table>
+      </div>
+    </div>
+
   </div>
 </div>
-
-
 
 <!-- ── Rule Builder Modal ── -->
 <div class="modal-overlay" id="rule-builder-modal">
@@ -645,9 +542,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
         <textarea id="rb-rule-input"
           placeholder="e.g. every day convert ₦2,000 to USDT on BEP-20 and send to my Binance wallet&#10;e.g. on the 25th save 30% to PiggyVest and send ₦10,000 to Mama&#10;e.g. when salary arrives save 20% to Cowrywise and convert 10% to USDT on Tron"
           oninput="rbOnInput()"
-          style="width:100%;min-height:100px;padding:14px;border:1.5px solid var(--border2);border-radius:var(--radius);
-          font-family:var(--font);font-size:14px;line-height:1.6;color:var(--text);resize:vertical;outline:none;
-          transition:border-color .15s;background:var(--surface)"
+          style="width:100%;min-height:100px;padding:14px;border:1.5px solid var(--border2);border-radius:var(--radius);font-family:var(--font);font-size:14px;line-height:1.6;color:var(--text);resize:vertical;outline:none;transition:border-color .15s;background:var(--surface)"
           onfocus="this.style.borderColor='var(--accent)';this.style.boxShadow='0 0 0 3px rgba(15,111,222,.1)'"
           onfocusout="this.style.borderColor='var(--border2)';this.style.boxShadow='none'"
         ></textarea>
@@ -664,7 +559,22 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
         <button class="rb-example-pill" onclick="rbFillExample(this)">every hour convert ₦1000 to USDT on BEP-20</button>
       </div>
     </div>
-    <div id="rb-parse-result" style="display:none;margin-top:4px"></div>
+
+    <!-- Parse result -->
+    <div id="rb-parse-result" style="display:none;margin-top:8px"></div>
+
+    <!-- Fee preview — shown after parse -->
+    <div id="rb-fee-preview" style="display:none">
+      <div class="fee-preview-box">
+        <div class="fee-preview-label">
+          <i data-lucide="zap" style="width:14px;height:14px;color:var(--accent)"></i>
+          <span id="rb-fee-label">Execution fee</span>
+        </div>
+        <div class="fee-preview-amount" id="rb-fee-amount">₦20 / run</div>
+      </div>
+      <div class="fee-breakdown-line" id="rb-fee-breakdown"></div>
+    </div>
+
     <div style="display:flex;gap:10px;margin-top:20px">
       <button class="btn btn-secondary" style="flex:1" onclick="closeModal('rule-builder-modal')">Cancel</button>
       <button class="btn btn-primary" style="flex:2;opacity:.4;pointer-events:none" id="rb-confirm-btn" onclick="rbConfirm()">
@@ -673,7 +583,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
     </div>
   </div>
 </div>
-
 
 <!-- ── Execution Result Modal ── -->
 <div class="modal-overlay" id="exec-modal">
@@ -692,7 +601,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 <div class="modal-overlay" id="contact-modal">
   <div class="modal">
     <div class="modal-header">
-      <div class="modal-title" id="contact-modal-title">Add Contact</div>
+      <div class="modal-title">Add Contact</div>
       <button class="modal-close" onclick="closeModal('contact-modal')">
         <i data-lucide="x" style="width:16px;height:16px"></i>
       </button>
@@ -726,25 +635,25 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 <div class="modal-overlay" id="wallet-modal">
   <div class="modal">
     <div class="modal-header">
-      <div class="modal-title">Add Crypto Wallet</div>
+      <div class="modal-title">Add External Wallet</div>
       <button class="modal-close" onclick="closeModal('wallet-modal')">
         <i data-lucide="x" style="width:16px;height:16px"></i>
       </button>
     </div>
-    <p style="font-size:13px;color:var(--text2);margin-bottom:20px">Save a wallet so Atlas can use it in your rules — e.g. <em>"convert ₦2000 to USDT and send to my <strong>Binance wallet</strong>"</em></p>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:20px">Save a wallet so Atlas can send crypto to it in your rules — e.g. <em>"convert ₦2000 to USDT and send to my <strong>Binance wallet</strong>"</em></p>
     <div class="form-group">
       <label class="form-label">Wallet label</label>
-      <input type="text" class="form-input" id="wallet-label" placeholder="e.g. Binance, Trust Wallet, Bybit, Cold Wallet"/>
+      <input type="text" class="form-input" id="wallet-label" placeholder="e.g. Binance, Trust Wallet, Bybit"/>
     </div>
     <div class="form-group">
       <label class="form-label">Network</label>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:6px" id="wallet-network-grid">
-        <div class="rb-amount-type-card" data-net="bep20" onclick="selectWalletNetwork('bep20')"><div style="font-size:13px;font-weight:600">BEP-20</div><div style="font-size:11px;color:var(--text3)">Binance Smart Chain</div></div>
-        <div class="rb-amount-type-card" data-net="trc20" onclick="selectWalletNetwork('trc20')"><div style="font-size:13px;font-weight:600">TRC-20</div><div style="font-size:11px;color:var(--text3)">Tron Network</div></div>
-        <div class="rb-amount-type-card" data-net="erc20" onclick="selectWalletNetwork('erc20')"><div style="font-size:13px;font-weight:600">ERC-20</div><div style="font-size:11px;color:var(--text3)">Ethereum</div></div>
-        <div class="rb-amount-type-card" data-net="polygon" onclick="selectWalletNetwork('polygon')"><div style="font-size:13px;font-weight:600">Polygon</div><div style="font-size:11px;color:var(--text3)">MATIC</div></div>
-        <div class="rb-amount-type-card" data-net="solana" onclick="selectWalletNetwork('solana')"><div style="font-size:13px;font-weight:600">Solana</div><div style="font-size:11px;color:var(--text3)">SOL Network</div></div>
-        <div class="rb-amount-type-card" data-net="arbitrum" onclick="selectWalletNetwork('arbitrum')"><div style="font-size:13px;font-weight:600">Arbitrum</div><div style="font-size:11px;color:var(--text3)">ARB Network</div></div>
+        <div class="rb-net-card" data-net="bep20" onclick="selectWalletNetwork('bep20')"><div style="font-size:13px;font-weight:600">BEP-20</div><div style="font-size:11px;color:var(--text3)">Binance Smart Chain</div></div>
+        <div class="rb-net-card" data-net="trc20" onclick="selectWalletNetwork('trc20')"><div style="font-size:13px;font-weight:600">TRC-20</div><div style="font-size:11px;color:var(--text3)">Tron Network</div></div>
+        <div class="rb-net-card" data-net="erc20" onclick="selectWalletNetwork('erc20')"><div style="font-size:13px;font-weight:600">ERC-20</div><div style="font-size:11px;color:var(--text3)">Ethereum</div></div>
+        <div class="rb-net-card" data-net="polygon" onclick="selectWalletNetwork('polygon')"><div style="font-size:13px;font-weight:600">Polygon</div><div style="font-size:11px;color:var(--text3)">MATIC</div></div>
+        <div class="rb-net-card" data-net="solana" onclick="selectWalletNetwork('solana')"><div style="font-size:13px;font-weight:600">Solana</div><div style="font-size:11px;color:var(--text3)">SOL Network</div></div>
+        <div class="rb-net-card" data-net="arbitrum" onclick="selectWalletNetwork('arbitrum')"><div style="font-size:13px;font-weight:600">Arbitrum</div><div style="font-size:11px;color:var(--text3)">ARB Network</div></div>
       </div>
     </div>
     <div class="form-group">
@@ -781,19 +690,16 @@ let token = localStorage.getItem('atlas_token') || '';
 let userData = JSON.parse(localStorage.getItem('atlas_user') || '{}');
 let accounts = [];
 let contacts = [];
-let ruleActions = [];
 let banks = [];
 
-// ── API Helper ────────────────────────────────────────────────────────────
+// ── Network meta ───────────────────────────────────────────────────────────
+const NET_COLORS = { bep20:'#F97316', trc20:'#EF4444', erc20:'#8B5CF6', polygon:'#7C3AED', solana:'#10B981', arbitrum:'#0F6FDE' };
+const NET_LABELS = { bep20:'BEP-20 (BSC)', trc20:'TRC-20 (Tron)', erc20:'ERC-20 (Ethereum)', polygon:'Polygon', solana:'Solana', arbitrum:'Arbitrum' };
+const DEMO_ADDRS = { bep20:'0xA1B2C3D4E5F6789012345678901234567890ABCD', trc20:'TRX9mK7vLpQnSd4Wj8XeYcFhGiBo2RtAuZv', erc20:'0xB2C3D4E5F6789012345678901234567890ABCDE1', polygon:'0xC3D4E5F6789012345678901234567890ABCDEF12', solana:'7xKp9mLvQnRd4Wj8XeYcFhGiBo2RtAuZvMnKpLv9Q', arbitrum:'0xD4E5F6789012345678901234567890ABCDEF1234' };
+
+// ── API Helper ─────────────────────────────────────────────────────────────
 async function api(method, path, body = null) {
-  const opts = {
-    method,
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      ...(token ? {'Authorization': `Bearer ${token}`} : {})
-    }
-  };
+  const opts = { method, headers: { 'Content-Type':'application/json', 'Accept':'application/json', ...(token ? {'Authorization':`Bearer ${token}`} : {}) } };
   if (body) opts.body = JSON.stringify(body);
   const res = await fetch(API + path, opts);
   const data = await res.json();
@@ -801,19 +707,15 @@ async function api(method, path, body = null) {
   return data;
 }
 
-// ── Auth ──────────────────────────────────────────────────────────────────
+// ── Auth ───────────────────────────────────────────────────────────────────
 async function login() {
   const btn = document.getElementById('login-btn');
   const errEl = document.getElementById('auth-error');
-  const email = document.getElementById('login-email').value;
-  const pass = document.getElementById('login-password').value;
-
   btn.innerHTML = '<div class="spinner"></div>';
   btn.disabled = true;
   errEl.style.display = 'none';
-
   try {
-    const res = await api('POST', '/auth/login', { email, password: pass });
+    const res = await api('POST', '/auth/login', { email: document.getElementById('login-email').value, password: document.getElementById('login-password').value });
     token = res.data.access_token;
     userData = res.data.user;
     localStorage.setItem('atlas_token', token);
@@ -822,7 +724,7 @@ async function login() {
   } catch (e) {
     errEl.textContent = e.message;
     errEl.style.display = 'block';
-    btn.innerHTML = '<span id="login-btn-text">Sign in</span>';
+    btn.innerHTML = '<span>Sign in</span>';
     btn.disabled = false;
   }
 }
@@ -835,92 +737,91 @@ function logout() {
   document.getElementById('auth-screen').style.display = 'flex';
 }
 
-document.getElementById('login-password').addEventListener('keydown', e => {
-  if (e.key === 'Enter') login();
-});
+document.getElementById('login-password').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
 
-// ── App Init ──────────────────────────────────────────────────────────────
+// ── App Init ───────────────────────────────────────────────────────────────
 async function initApp() {
   document.getElementById('auth-screen').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
-
-  const name = userData.name || 'User';
+  const name = userData.full_name || userData.name || 'User';
   const first = name.split(' ')[0];
   document.getElementById('user-name').textContent = first;
   document.getElementById('user-avatar').textContent = first[0].toUpperCase();
-
-  const hour = new Date().getHours();
-  const greet = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
-  document.getElementById('dash-greeting').textContent = `${greet}, ${first}`;
-
+  const h = new Date().getHours();
+  document.getElementById('dash-greeting').textContent = `${h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'}, ${first}`;
   lucide.createIcons();
   await loadDashboard();
   await loadBanks();
 }
 
-// ── Dashboard ─────────────────────────────────────────────────────────────
+// ── Dashboard ──────────────────────────────────────────────────────────────
 async function loadDashboard() {
   try {
-    const res = await api('GET', '/dashboard');
-    const d = res.data;
+    const [dashRes, walletRes, feeRes] = await Promise.all([
+      api('GET', '/dashboard'),
+      api('GET', '/crypto-balances').catch(() => ({ data: [] })),
+      api('GET', '/fees/summary').catch(() => ({ data: { this_month: '₦0' } })),
+    ]);
+    const d = dashRes.data;
+    accounts = d.accounts || [];
 
-    document.getElementById('stat-balance').textContent = d.summary.total_balance;
-    document.getElementById('stat-accounts').textContent = `${d.accounts.length} account${d.accounts.length !== 1 ? 's' : ''}`;
-    document.getElementById('stat-moved').textContent = d.summary.total_moved;
-    document.getElementById('stat-executions').textContent = `${d.summary.successful_executions} successful`;
-    document.getElementById('stat-rules').textContent = d.summary.active_rules;
-    document.getElementById('stat-rules-sub').textContent = `of ${d.summary.total_rules} total`;
-    document.getElementById('stat-contacts').textContent = d.summary.contacts_count;
+    document.getElementById('stat-balance').textContent     = d.summary.total_balance;
+    document.getElementById('stat-accounts').textContent    = `${accounts.length} account${accounts.length !== 1 ? 's' : ''}`;
+    document.getElementById('stat-moved').textContent       = d.summary.total_moved;
+    document.getElementById('stat-executions').textContent  = `${d.summary.successful_executions} successful`;
+    document.getElementById('stat-rules').textContent       = d.summary.active_rules;
+    document.getElementById('stat-rules-sub').textContent   = `of ${d.summary.total_rules} total`;
 
-    accounts = d.accounts;
+    // USDT stat
+    const wallets = walletRes.data || [];
+    const usdtTotal = wallets.filter(w => w.token === 'USDT' || w.token === 'USDC').reduce((s,w) => s + parseFloat(w.balance || 0), 0);
+    document.getElementById('stat-usdt').textContent = usdtTotal.toFixed(2) + ' USDT';
+    document.getElementById('stat-fees-month').textContent = (feeRes.data?.this_month || '₦0') + ' fees this month';
 
     // Recent ledger
-    const ledgerEl = document.getElementById('dash-ledger');
-    if (d.ledger.length === 0) {
-      ledgerEl.innerHTML = '<div class="empty" style="padding:24px"><div class="empty-sub">No transactions yet</div></div>';
-    } else {
-      ledgerEl.innerHTML = d.ledger.slice(0,5).map(e => `
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)">
-          <div>
-            <div style="font-size:13.5px;color:var(--text)">${e.description}</div>
-            <div style="font-size:11.5px;color:var(--text3);margin-top:2px">${formatDate(e.date)}</div>
-          </div>
-          <div class="${e.type === 'credit' ? 'amount-credit' : 'amount-debit'}" style="font-size:13.5px">${e.amount}</div>
-        </div>
-      `).join('');
-    }
+    const el = document.getElementById('dash-ledger');
+    const ledger = d.ledger || [];
+    el.innerHTML = ledger.length === 0
+      ? '<div class="empty" style="padding:24px"><div class="empty-sub">No transactions yet</div></div>'
+      : ledger.slice(0,5).map(e => `
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)">
+            <div>
+              <div style="font-size:13.5px;color:var(--text)">${e.description}</div>
+              <div style="font-size:11.5px;color:var(--text3);margin-top:2px">${formatDate(e.date)}</div>
+            </div>
+            <div class="${e.type === 'credit' ? 'amount-credit' : 'amount-debit'}" style="font-size:13.5px">${e.amount}</div>
+          </div>`).join('');
 
-    // Recent executions
+    // Recent executions — with receipt button
     const execEl = document.getElementById('dash-executions');
-    if (d.recent_executions.length === 0) {
-      execEl.innerHTML = '<div class="empty" style="padding:24px"><div class="empty-sub">No executions yet. Run a rule!</div></div>';
-    } else {
-      execEl.innerHTML = d.recent_executions.map(e => `
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)">
-          <div>
-            <div style="font-size:13.5px;font-weight:500;color:var(--text)">${e.rule_name}</div>
-            <div style="font-size:12px;color:var(--text3);margin-top:2px">${e.steps_count} steps · ${formatDate(e.executed_at)}</div>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px">
-            <div style="font-size:13px;font-weight:600;color:var(--text)">${e.total_amount}</div>
-            <span class="badge ${e.status === 'completed' ? 'badge-green' : 'badge-red'}">${e.status}</span>
-          </div>
-        </div>
-      `).join('');
-    }
+    const execs = d.recent_executions || [];
+    execEl.innerHTML = execs.length === 0
+      ? '<div class="empty" style="padding:24px"><div class="empty-sub">No executions yet. Run a rule!</div></div>'
+      : execs.map(e => `
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)">
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13.5px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.rule_name}</div>
+              <div style="font-size:12px;color:var(--text3);margin-top:2px">${e.steps_count} steps · ${formatDate(e.executed_at)}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:12px">
+              <div style="font-size:13px;font-weight:600;color:var(--text)">${e.total_amount}</div>
+              <span class="badge ${e.status === 'completed' ? 'badge-green' : 'badge-red'}">${e.status}</span>
+              ${e.status === 'completed' ? `<button class="receipt-view-btn" onclick="viewReceipt('${e.id}')" title="View receipt"><i data-lucide="file-text" style="width:12px;height:12px"></i> Receipt</button>` : ''}
+            </div>
+          </div>`).join('');
 
     lucide.createIcons();
   } catch(e) {
+    console.error(e);
     toast('Failed to load dashboard', 'error');
   }
 }
 
-// ── Rules ─────────────────────────────────────────────────────────────────
+// ── Rules ──────────────────────────────────────────────────────────────────
 async function loadRules() {
   try {
     const res = await api('GET', '/rules');
     const container = document.getElementById('rules-list');
-
     if (res.data.length === 0) {
       container.innerHTML = `<div class="empty" style="grid-column:1/-1;padding:64px">
         <div class="empty-icon"><i data-lucide="git-branch" style="width:24px;height:24px;color:var(--text3)"></i></div>
@@ -931,7 +832,6 @@ async function loadRules() {
       lucide.createIcons();
       return;
     }
-
     container.innerHTML = res.data.map(r => `
       <div class="rule-card">
         <div class="rule-header">
@@ -939,35 +839,29 @@ async function loadRules() {
             <div class="rule-name">${r.name}</div>
             <div class="rule-desc">${r.description || ''}</div>
           </div>
-          <label class="toggle" title="${r.is_active ? 'Deactivate' : 'Activate'}">
+          <label class="toggle">
             <input type="checkbox" ${r.is_active ? 'checked' : ''} onchange="toggleRule('${r.id}', this)"/>
             <div class="toggle-track"></div>
             <div class="toggle-thumb"></div>
           </label>
         </div>
-        <div class="rule-trigger">
-          <i data-lucide="clock" style="width:12px;height:12px"></i>
-          ${r.trigger.label}
-        </div>
+        <div class="rule-trigger"><i data-lucide="clock" style="width:12px;height:12px"></i>${r.trigger.label}</div>
         <div class="rule-actions-list">
           ${r.actions.map(a => `
             <div class="rule-action-item">
               <div class="step-dot">${a.step}</div>
-              <div style="flex:1;font-size:13px">${a.label || a.type}</div>
+              <div style="flex:1">${a.label || a.type}</div>
               <div style="font-size:12px;font-weight:600;color:var(--text2)">${formatActionAmount(a)}</div>
-            </div>
-          `).join('')}
+            </div>`).join('')}
+        </div>
+        <div style="padding:8px 10px;background:var(--accent-light);border-radius:8px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:12px;color:var(--text2)">Execution fee</span>
+          <span style="font-size:12px;font-weight:700;color:var(--accent);font-family:var(--mono)">${calcRuleFee(r.actions.length)}</span>
         </div>
         <div class="rule-footer">
           <div class="rule-stats">
-            <div class="rule-stat">
-              <i data-lucide="play" style="width:12px;height:12px"></i>
-              ${r.execution_count} runs
-            </div>
-            <div class="rule-stat">
-              <i data-lucide="landmark" style="width:12px;height:12px"></i>
-              ${r.source_account?.institution || '—'}
-            </div>
+            <div class="rule-stat"><i data-lucide="play" style="width:12px;height:12px"></i>${r.execution_count} runs</div>
+            <div class="rule-stat"><i data-lucide="landmark" style="width:12px;height:12px"></i>${r.source_account?.institution || '—'}</div>
           </div>
           <div class="rule-actions">
             <button class="btn btn-success btn-sm" onclick="executeRule('${r.id}', '${r.name}')">
@@ -978,12 +872,17 @@ async function loadRules() {
             </button>
           </div>
         </div>
-      </div>
-    `).join('');
+      </div>`).join('');
     lucide.createIcons();
   } catch(e) {
     toast('Failed to load rules', 'error');
   }
+}
+
+function calcRuleFee(steps) {
+  if (steps >= 11) return '₦50 / run';
+  if (steps >= 6)  return '₦30 / run';
+  return '₦20 / run';
 }
 
 async function executeRule(id, name) {
@@ -1025,22 +924,148 @@ function formatActionAmount(a) {
   return '₦' + Number(a.amount).toLocaleString();
 }
 
-// ── Rule Builder ──────────────────────────────────────────────────────────
-// ── Rule Builder (NLP) ───────────────────────────────────────────────────
-let rbParsed = null;
-let rbSelectedAccountId = null;
-let rbDebounceTimer = null;
+// ── Atlas Wallet ───────────────────────────────────────────────────────────
+async function loadWallet() {
+  try {
+    const res = await api('GET', '/crypto-balances');
+    const wallets = res.data || [];
+    const balGrid = document.getElementById('wallet-balances-grid');
+    const depGrid = document.getElementById('wallet-deposit-grid');
+
+    // Balances
+    if (wallets.length === 0) {
+      balGrid.innerHTML = `<div class="empty" style="grid-column:1/-1;padding:40px">
+        <div class="empty-icon"><i data-lucide="coins" style="width:24px;height:24px;color:var(--text3)"></i></div>
+        <div class="empty-title">No balances yet</div>
+        <div class="empty-sub">Run a rule with a crypto conversion step to fund your wallet</div>
+      </div>`;
+    } else {
+      balGrid.innerHTML = wallets.map(w => {
+        const color = NET_COLORS[w.network] || 'var(--accent)';
+        const bal = parseFloat(w.balance || 0).toFixed(4);
+        const recv = parseFloat(w.total_received || w.total_deposited || 0).toFixed(4);
+        return `<div class="wallet-balance-card">
+          <div class="wallet-net-label" style="color:${color}">${NET_LABELS[w.network] || w.network.toUpperCase()}</div>
+          <div class="wallet-token-amount">${bal}<span class="wallet-token-sym">${w.token}</span></div>
+          <div style="font-size:12px;color:var(--text3);margin-top:6px">Total received: ${recv} ${w.token}</div>
+          ${w.last_activity_at ? `<div style="font-size:11.5px;color:var(--text3);margin-top:4px">Last activity: ${formatDate(w.last_activity_at)}</div>` : ''}
+        </div>`;
+      }).join('');
+    }
+
+    // Deposit addresses — always show all 6 networks
+    const networks = ['trc20','bep20','erc20','polygon','solana','arbitrum'];
+    depGrid.innerHTML = networks.map(net => {
+      const color = NET_COLORS[net];
+      const existing = wallets.find(w => w.network === net);
+      const addr = existing?.address || DEMO_ADDRS[net];
+      return `<div class="wallet-balance-card">
+        <div class="wallet-net-label" style="color:${color}">${NET_LABELS[net]}</div>
+        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px">Send USDT here</div>
+        <div class="wallet-addr" onclick="copyAddr('${addr}', this)">${addr}</div>
+        <button class="btn btn-ghost btn-sm btn-full" style="margin-top:8px;font-size:12px" onclick="copyAddr('${addr}', null)">
+          <i data-lucide="copy" style="width:12px;height:12px"></i> Copy
+        </button>
+      </div>`;
+    }).join('');
+
+    lucide.createIcons();
+  } catch(e) {
+    toast('Failed to load wallet', 'error');
+  }
+}
+
+function copyAddr(addr, el) {
+  navigator.clipboard.writeText(addr).then(() => {
+    toast('Address copied', 'success');
+    if (el) { const orig = el.textContent; el.textContent = '✓ Copied!'; setTimeout(() => el.textContent = orig, 1500); }
+  });
+}
+
+// ── Receipts ───────────────────────────────────────────────────────────────
+async function loadReceipts() {
+  try {
+    const res = await api('GET', '/receipts');
+    const tbody = document.getElementById('receipts-body');
+    const data = res.data || [];
+    if (data.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:48px;color:var(--text3)">No receipts yet — execute a rule to generate one</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = data.map(r => `
+      <tr>
+        <td><span style="font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:600">${r.receipt_number}</span></td>
+        <td style="font-size:13.5px">${r.rule_name || '—'}</td>
+        <td style="font-family:var(--mono);font-size:13px;font-weight:500">${r.total_amount}</td>
+        <td style="font-family:var(--mono);font-size:13px;color:var(--orange)">${r.total_fees}</td>
+        <td><span class="badge ${r.status === 'completed' ? 'badge-green' : 'badge-red'}">${r.status}</span></td>
+        <td style="color:var(--text3);font-size:12.5px">${formatDate(r.created_at)}</td>
+        <td><button class="receipt-view-btn" onclick="viewReceipt('${r.execution_id}')"><i data-lucide="external-link" style="width:12px;height:12px"></i> View</button></td>
+      </tr>`).join('');
+    lucide.createIcons();
+  } catch(e) {
+    toast('Failed to load receipts', 'error');
+  }
+}
+
+function viewReceipt(execId) {
+  if (!execId) return;
+  window.open(`${API}/executions/${execId}/receipt?token=${encodeURIComponent(token)}`, '_blank');
+}
+
+// ── Execution Modal ────────────────────────────────────────────────────────
+function showExecutionModal(exec) {
+  const content = document.getElementById('exec-modal-content');
+  const ok = exec.status === 'completed';
+  const sc = ok ? 'var(--green)' : 'var(--red)';
+  const sb = ok ? 'var(--green-bg)' : 'var(--red-bg)';
+  content.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding:14px 16px;background:${sb};border-radius:var(--radius)">
+      <div>
+        <div style="font-size:15px;font-weight:600;color:${sc}">${exec.rule?.name || 'Rule'}</div>
+        <div style="font-size:13px;color:var(--text2);margin-top:2px">Total: ${exec.total_amount} · ${(exec.steps||[]).length} steps</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="badge ${ok ? 'badge-green' : 'badge-red'}">${exec.status}</span>
+        ${ok ? `<button class="receipt-view-btn" onclick="viewReceipt('${exec.id}')"><i data-lucide="file-text" style="width:12px;height:12px"></i> Receipt</button>` : ''}
+      </div>
+    </div>
+    <div class="pipeline">${(exec.steps||[]).map(s => renderPipelineStep(s)).join('')}</div>`;
+  lucide.createIcons();
+  openModal('exec-modal');
+}
+
+function renderPipelineStep(step) {
+  const icon = { send_bank:'send', save_piggyvest:'piggy-bank', save_cowrywise:'trending-up', convert_crypto:'bitcoin', pay_bill:'zap' }[step.action_type] || 'circle';
+  const details = step.result ? Object.entries(step.result)
+    .filter(([k]) => ['recipient','plan','amount_usdt','rate','provider','smart_card','token','units'].some(f => k.includes(f)))
+    .slice(0,4).map(([k,v]) => {
+      if (typeof v === 'object') return Object.entries(v).map(([k2,v2]) => `<div class="step-detail-row"><span class="step-detail-key">${k2}</span><span class="step-detail-val">${v2}</span></div>`).join('');
+      return `<div class="step-detail-row"><span class="step-detail-key">${k}</span><span class="step-detail-val">${v}</span></div>`;
+    }).join('') : '';
+  return `
+    <div class="pipeline-step ${step.status}">
+      <div class="step-icon-wrap"><i data-lucide="${icon}" style="width:14px;height:14px"></i></div>
+      <div class="step-body">
+        <div class="step-label">${step.label || step.action_type}</div>
+        <div class="step-amount">${step.amount}</div>
+        ${step.rail_reference ? `<div class="step-ref">Ref: ${step.rail_reference}</div>` : ''}
+        ${details ? `<div class="step-detail">${details}</div>` : ''}
+      </div>
+    </div>`;
+}
+
+// ── Rule Builder ───────────────────────────────────────────────────────────
+let rbParsed = null, rbSelectedAccountId = null, rbDebounceTimer = null;
 
 function openRuleBuilder() {
-  rbParsed = null;
-  rbSelectedAccountId = null;
-
+  rbParsed = null; rbSelectedAccountId = null;
   document.getElementById('rb-rule-input').value = '';
   document.getElementById('rb-parse-result').style.display = 'none';
   document.getElementById('rb-parse-result').innerHTML = '';
+  document.getElementById('rb-fee-preview').style.display = 'none';
   rbSetConfirmEnabled(false);
 
-  // Populate account cards
   const wrap = document.getElementById('rb-account-cards');
   if (accounts.length === 0) {
     wrap.innerHTML = `<div style="font-size:13px;color:var(--text3);padding:10px;background:var(--surface2);border-radius:var(--radius)">No accounts connected yet.</div>`;
@@ -1055,13 +1080,10 @@ function openRuleBuilder() {
           </div>
         </div>
         <div style="font-size:15px;font-weight:600;color:var(--accent)">${a.formatted}</div>
-      </div>
-    `).join('');
-    // Auto-select primary
+      </div>`).join('');
     const primary = accounts.find(a => a.is_primary) || accounts[0];
     if (primary) rbSelectAccount(primary.id);
   }
-
   openModal('rule-builder-modal');
   lucide.createIcons();
   setTimeout(() => document.getElementById('rb-rule-input').focus(), 200);
@@ -1069,15 +1091,11 @@ function openRuleBuilder() {
 
 function rbSelectAccount(id) {
   rbSelectedAccountId = id;
-  document.querySelectorAll('.rb-account-option').forEach(el => {
-    el.classList.toggle('selected', el.dataset.id === id);
-  });
+  document.querySelectorAll('.rb-account-option').forEach(el => el.classList.toggle('selected', el.dataset.id === id));
 }
 
 function rbFillExample(btn) {
-  const input = document.getElementById('rb-rule-input');
-  input.value = btn.textContent.trim();
-  input.focus();
+  document.getElementById('rb-rule-input').value = btn.textContent.trim();
   rbOnInput();
 }
 
@@ -1085,10 +1103,10 @@ function rbOnInput() {
   const text = document.getElementById('rb-rule-input').value.trim();
   if (!text || text.length < 5) {
     document.getElementById('rb-parse-result').style.display = 'none';
+    document.getElementById('rb-fee-preview').style.display = 'none';
     rbSetConfirmEnabled(false);
     return;
   }
-  // Debounce 600ms
   clearTimeout(rbDebounceTimer);
   rbShowThinking(true);
   rbDebounceTimer = setTimeout(() => rbParse(text), 600);
@@ -1100,159 +1118,105 @@ async function rbParse(text) {
     rbParsed = res.data;
     rbShowThinking(false);
     rbRenderParseResult(rbParsed);
+    rbRenderFeePreview(rbParsed);
   } catch(e) {
     rbShowThinking(false);
     toast('Parse failed: ' + e.message, 'error');
   }
 }
 
-function rbShowThinking(show) {
-  const el = document.getElementById('rb-thinking');
-  el.style.display = show ? 'flex' : 'none';
+function rbRenderFeePreview(p) {
+  const n = (p.actions || []).length;
+  if (n === 0) { document.getElementById('rb-fee-preview').style.display = 'none'; return; }
+  const fee = n >= 11 ? 50 : n >= 6 ? 30 : 20;
+  const tier = n >= 11 ? '11+ steps' : n >= 6 ? '6–10 steps' : '1–5 steps';
+  const hasCrypto = p.actions.some(a => a.action_type === 'convert_crypto');
+  document.getElementById('rb-fee-label').textContent = `${n} step${n !== 1 ? 's' : ''} (${tier})`;
+  document.getElementById('rb-fee-amount').textContent = `₦${fee} / run`;
+  const parts = [`₦${fee} flat execution fee (${tier})`];
+  if (hasCrypto) parts.push('+ 0.5% FX spread + $0.05 per USDT conversion');
+  if (p.actions.some(a => a.action_type === 'pay_bill')) parts.push('+ ₦0 for bill payments (billed to merchant)');
+  document.getElementById('rb-fee-breakdown').textContent = parts.join('  ·  ');
+  document.getElementById('rb-fee-preview').style.display = 'block';
+  lucide.createIcons();
 }
 
-function rbSetConfirmEnabled(enabled) {
+function rbShowThinking(show) { document.getElementById('rb-thinking').style.display = show ? 'flex' : 'none'; }
+function rbSetConfirmEnabled(on) {
   const btn = document.getElementById('rb-confirm-btn');
-  btn.style.opacity = enabled ? '1' : '.4';
-  btn.style.pointerEvents = enabled ? 'auto' : 'none';
+  btn.style.opacity = on ? '1' : '.4';
+  btn.style.pointerEvents = on ? 'auto' : 'none';
 }
 
 function rbRenderParseResult(p) {
   const wrap = document.getElementById('rb-parse-result');
   wrap.style.display = 'block';
-
-  const confidenceColor = p.confidence >= 80 ? 'var(--green)' : p.confidence >= 50 ? 'var(--orange)' : 'var(--red)';
-  const confidenceBg    = p.confidence >= 80 ? 'var(--green-bg)' : p.confidence >= 50 ? 'var(--orange-bg)' : 'var(--red-bg)';
-
+  const cc = p.confidence >= 80 ? 'var(--green)' : p.confidence >= 50 ? 'var(--orange)' : 'var(--red)';
+  const cb = p.confidence >= 80 ? 'var(--green-bg)' : p.confidence >= 50 ? 'var(--orange-bg)' : 'var(--red-bg)';
   const actionMeta = {
-    send_bank:      { icon:'send',        color:'var(--accent)',  bg:'var(--accent-light)', label:'Bank Transfer' },
-    save_piggyvest: { icon:'piggy-bank',  color:'var(--green)',   bg:'var(--green-bg)',     label:'PiggyVest' },
-    save_cowrywise: { icon:'trending-up', color:'var(--purple)',  bg:'var(--purple-bg)',    label:'Cowrywise' },
-    convert_crypto: { icon:'bitcoin',     color:'var(--orange)',  bg:'var(--orange-bg)',    label:'Crypto' },
-    pay_bill:       { icon:'zap',         color:'var(--red)',     bg:'var(--red-bg)',       label:'Bill' },
+    send_bank:      { icon:'send',        color:'var(--accent)',  bg:'var(--accent-light)' },
+    save_piggyvest: { icon:'piggy-bank',  color:'var(--green)',   bg:'var(--green-bg)' },
+    save_cowrywise: { icon:'trending-up', color:'var(--purple)',  bg:'var(--purple-bg)' },
+    convert_crypto: { icon:'bitcoin',     color:'var(--orange)',  bg:'var(--orange-bg)' },
+    pay_bill:       { icon:'zap',         color:'var(--red)',     bg:'var(--red-bg)' },
   };
-
-  const actionsHTML = p.actions.map((a, i) => {
-    const meta  = actionMeta[a.action_type] || { icon:'circle', color:'var(--text2)', bg:'var(--surface2)', label:a.action_type };
-    const amt   = a.amount_type === 'percentage' ? `${a.amount}%` : `₦${Number(a.amount).toLocaleString()}`;
-    const extra = a.config?.network ? `<span style="font-size:11px;background:var(--surface2);padding:2px 7px;border-radius:99px;color:var(--text2);margin-left:6px">${a.config.network.toUpperCase()}</span>` : '';
-    const dest  = a.config?.contact_label ? `→ ${a.config.contact_label}` :
-                  a.config?.wallet_label  ? `→ ${a.config.wallet_label}` :
-                  a.config?.plan          ? `→ ${a.config.plan}` :
-                  a.config?.provider      ? `→ ${a.config.provider.toUpperCase()}` : '';
-    return `
-      <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)">
-        <div style="width:28px;height:28px;border-radius:7px;background:${meta.bg};color:${meta.color};display:flex;align-items:center;justify-content:center;flex-shrink:0">
-          <i data-lucide="${meta.icon}" style="width:13px;height:13px"></i>
-        </div>
-        <div style="flex:1;font-size:13.5px">
-          <span style="font-weight:500">${a.label || meta.label}</span>
-          <span style="color:var(--text3);margin-left:6px">${dest}</span>
-          ${extra}
-        </div>
-        <div style="font-size:13px;font-weight:600;color:var(--text2)">${amt}</div>
-      </div>
-    `;
+  const actionsHTML = (p.actions||[]).map(a => {
+    const m = actionMeta[a.action_type] || { icon:'circle', color:'var(--text2)', bg:'var(--surface2)' };
+    const amt = a.amount_type === 'percentage' ? `${a.amount}%` : `₦${Number(a.amount).toLocaleString()}`;
+    const net = a.config?.network ? `<span style="font-size:11px;background:var(--surface2);padding:2px 7px;border-radius:99px;color:var(--text2);margin-left:6px">${a.config.network.toUpperCase()}</span>` : '';
+    const dest = a.config?.contact_label ? `→ ${a.config.contact_label}` : a.config?.wallet_label ? `→ ${a.config.wallet_label}` : a.config?.plan ? `→ ${a.config.plan}` : a.config?.provider ? `→ ${a.config.provider.toUpperCase()}` : '';
+    return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)">
+      <div style="width:28px;height:28px;border-radius:7px;background:${m.bg};color:${m.color};display:flex;align-items:center;justify-content:center;flex-shrink:0"><i data-lucide="${m.icon}" style="width:13px;height:13px"></i></div>
+      <div style="flex:1;font-size:13.5px"><span style="font-weight:500">${a.label || a.action_type}</span><span style="color:var(--text3);margin-left:6px">${dest}</span>${net}</div>
+      <div style="font-size:13px;font-weight:600;color:var(--text2)">${amt}</div>
+    </div>`;
   }).join('');
-
-  const warningsHTML = p.warnings.length > 0 ? `
-    <div style="margin-top:12px;display:flex;flex-direction:column;gap:6px">
-      ${p.warnings.map(w => `
-        <div style="display:flex;align-items:flex-start;gap:8px;padding:8px 12px;background:var(--orange-bg);border-radius:var(--radius);border:1px solid #FEC84B">
-          <i data-lucide="alert-triangle" style="width:14px;height:14px;color:var(--orange);flex-shrink:0;margin-top:1px"></i>
-          <div style="font-size:12.5px;color:var(--orange)">${w}</div>
-        </div>
-      `).join('')}
+  const warns = (p.warnings||[]).length > 0 ? `<div style="margin-top:12px;display:flex;flex-direction:column;gap:6px">
+    ${p.warnings.map(w => `<div style="display:flex;align-items:flex-start;gap:8px;padding:8px 12px;background:var(--orange-bg);border-radius:var(--radius);border:1px solid #FEC84B"><i data-lucide="alert-triangle" style="width:14px;height:14px;color:var(--orange);flex-shrink:0;margin-top:1px"></i><div style="font-size:12.5px;color:var(--orange)">${w}</div></div>`).join('')}
+  </div>` : '';
+  wrap.innerHTML = `<div style="border:1.5px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;animation:fadeUp .2s ease">
+    <div style="padding:14px 16px;background:var(--bg);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+      <div style="display:flex;align-items:center;gap:8px"><i data-lucide="sparkles" style="width:15px;height:15px;color:var(--accent)"></i><span style="font-size:13px;font-weight:600;color:var(--text)">Atlas understood this as:</span></div>
+      <div style="padding:3px 10px;border-radius:99px;background:${cb}"><span style="font-size:12px;font-weight:600;color:${cc}">${p.confidence}% confident</span></div>
     </div>
-  ` : '';
-
-  wrap.innerHTML = `
-    <div style="border:1.5px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;animation:fadeUp .2s ease">
-      <!-- Header -->
-      <div style="padding:14px 16px;background:var(--bg);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
-        <div style="display:flex;align-items:center;gap:8px">
-          <i data-lucide="sparkles" style="width:15px;height:15px;color:var(--accent)"></i>
-          <span style="font-size:13px;font-weight:600;color:var(--text)">Atlas understood this as:</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:6px;padding:3px 10px;border-radius:99px;background:${confidenceBg}">
-          <span style="font-size:12px;font-weight:600;color:${confidenceColor}">${p.confidence}% confident</span>
-        </div>
+    <div style="padding:16px">
+      <div style="margin-bottom:12px">
+        <div style="font-size:11.5px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Rule name</div>
+        <input type="text" class="form-input" value="${p.name}" style="font-size:14px;font-weight:500" oninput="if(rbParsed) rbParsed.name=this.value"/>
       </div>
-      <!-- Body -->
-      <div style="padding:16px">
-        <!-- Rule name -->
-        <div style="margin-bottom:12px">
-          <div style="font-size:11.5px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Rule name</div>
-          <input type="text" class="form-input" value="${p.name}" style="font-size:14px;font-weight:500"
-            oninput="if(rbParsed) rbParsed.name=this.value"/>
-        </div>
-        <!-- Trigger -->
-        <div style="margin-bottom:12px;padding:10px 14px;background:var(--accent-light);border-radius:var(--radius);display:flex;align-items:center;gap:8px">
-          <i data-lucide="clock" style="width:14px;height:14px;color:var(--accent)"></i>
-          <span style="font-size:13.5px;color:var(--accent);font-weight:500">${p.trigger.label}</span>
-        </div>
-        <!-- Actions -->
-        <div style="font-size:11.5px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Actions</div>
-        <div style="display:flex;flex-direction:column;gap:6px">
-          ${actionsHTML}
-        </div>
-        ${warningsHTML}
+      <div style="margin-bottom:12px;padding:10px 14px;background:var(--accent-light);border-radius:var(--radius);display:flex;align-items:center;gap:8px">
+        <i data-lucide="clock" style="width:14px;height:14px;color:var(--accent)"></i>
+        <span style="font-size:13.5px;color:var(--accent);font-weight:500">${p.trigger.label}</span>
       </div>
+      <div style="font-size:11.5px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Actions (${(p.actions||[]).length} step${(p.actions||[]).length !== 1 ? 's' : ''})</div>
+      <div style="display:flex;flex-direction:column;gap:6px">${actionsHTML}</div>
+      ${warns}
     </div>
-  `;
-
+  </div>`;
   lucide.createIcons();
-  rbSetConfirmEnabled(p.actions.length > 0);
+  rbSetConfirmEnabled((p.actions||[]).length > 0);
 }
 
 async function rbConfirm() {
   if (!rbParsed) return;
   if (!rbSelectedAccountId) return toast('Select an account to debit from', 'error');
-
   const btn = document.getElementById('rb-confirm-btn');
   btn.innerHTML = '<div class="spinner"></div> Saving...';
   btn.style.pointerEvents = 'none';
-
   try {
-    // Compute total amount from actions for the rule
-    // If all actions are fixed, sum them. If any is percentage, use full_balance type.
     const hasPercentage = rbParsed.actions.some(a => a.amount_type === 'percentage');
-    const totalFixed    = rbParsed.actions
-      .filter(a => a.amount_type === 'fixed')
-      .reduce((s, a) => s + (parseFloat(a.amount) || 0), 0);
-
-    const totalAmountType  = hasPercentage ? 'full_balance' : 'fixed';
-    const totalAmount      = hasPercentage ? null : totalFixed;
-
-    const triggerType = rbParsed.trigger.type;
-    const triggerMap  = {
-      daily:   'schedule',
-      weekly:  'schedule',
-      hourly:  'schedule',
-      monthly: 'schedule',
-      interval:'schedule',
-      deposit: 'deposit',
-      balance: 'balance',
-      manual:  'manual',
-    };
-
+    const totalFixed = rbParsed.actions.filter(a => a.amount_type === 'fixed').reduce((s,a) => s + (parseFloat(a.amount)||0), 0);
+    const trigMap = { daily:'schedule', weekly:'schedule', hourly:'schedule', monthly:'schedule', interval:'schedule', deposit:'deposit', balance:'balance', manual:'manual' };
     await api('POST', '/rules', {
-      name:                 rbParsed.name,
-      rule_text:            document.getElementById('rb-rule-input').value.trim(),
+      name: rbParsed.name,
+      rule_text: document.getElementById('rb-rule-input').value.trim(),
       connected_account_id: rbSelectedAccountId,
-      trigger_type:         triggerMap[triggerType] || triggerType,
-      trigger_config:       { ...rbParsed.trigger.config, frequency: triggerType },
-      total_amount_type:    totalAmountType,
-      total_amount:         totalAmount,
-      actions:              rbParsed.actions.map(a => ({
-        action_type: a.action_type,
-        amount_type: a.amount_type,
-        amount:      parseFloat(a.amount) || 1,
-        label:       a.label,
-        config:      a.config || {},
-      })),
+      trigger_type: trigMap[rbParsed.trigger.type] || rbParsed.trigger.type,
+      trigger_config: { ...rbParsed.trigger.config, frequency: rbParsed.trigger.type },
+      total_amount_type: hasPercentage ? 'full_balance' : 'fixed',
+      total_amount: hasPercentage ? null : totalFixed,
+      actions: rbParsed.actions.map(a => ({ action_type:a.action_type, amount_type:a.amount_type, amount:parseFloat(a.amount)||1, label:a.label, config:a.config||{} })),
     });
-
     closeModal('rule-builder-modal');
     toast(`"${rbParsed.name}" saved`, 'success');
     loadRules();
@@ -1264,80 +1228,20 @@ async function rbConfirm() {
   }
 }
 
-// ── Execution Modal ───────────────────────────────────────────────────────
-function showExecutionModal(exec) {
-  const content = document.getElementById('exec-modal-content');
-
-  const statusColor = exec.status === 'completed' ? 'var(--green)' : 'var(--red)';
-  const statusBg = exec.status === 'completed' ? 'var(--green-bg)' : 'var(--red-bg)';
-
-  content.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding:14px 16px;background:${statusBg};border-radius:var(--radius)">
-      <div>
-        <div style="font-size:15px;font-weight:600;color:${statusColor}">${exec.rule.name}</div>
-        <div style="font-size:13px;color:var(--text2);margin-top:2px">Total: ${exec.total_amount} · ${exec.steps.length} steps</div>
-      </div>
-      <span class="badge ${exec.status === 'completed' ? 'badge-green' : 'badge-red'}">${exec.status}</span>
-    </div>
-    <div class="pipeline">
-      ${exec.steps.map(s => renderPipelineStep(s)).join('')}
-    </div>
-  `;
-  lucide.createIcons();
-  openModal('exec-modal');
-}
-
-function renderPipelineStep(step) {
-  const icon = {
-    send_bank: 'send',
-    save_piggyvest: 'piggy-bank',
-    save_cowrywise: 'trending-up',
-    convert_crypto: 'bitcoin',
-    pay_bill: 'zap',
-  }[step.action_type] || 'circle';
-
-  const details = step.result ? Object.entries(step.result)
-    .filter(([k]) => ['recipient','plan','amount_usdt','rate','provider','smart_card','token','units'].some(f => k.includes(f)))
-    .slice(0,4)
-    .map(([k,v]) => {
-      if (typeof v === 'object') return Object.entries(v).map(([k2,v2]) =>
-        `<div class="step-detail-row"><span class="step-detail-key">${k2}</span><span class="step-detail-val">${v2}</span></div>`
-      ).join('');
-      return `<div class="step-detail-row"><span class="step-detail-key">${k}</span><span class="step-detail-val">${v}</span></div>`;
-    }).join('') : '';
-
-  return `
-    <div class="pipeline-step ${step.status}">
-      <div class="step-icon-wrap">
-        <i data-lucide="${icon}" style="width:14px;height:14px"></i>
-      </div>
-      <div class="step-body">
-        <div class="step-label">${step.label || step.action_type}</div>
-        <div class="step-amount">${step.amount}</div>
-        ${step.rail_reference ? `<div class="step-ref">Ref: ${step.rail_reference}</div>` : ''}
-        ${details ? `<div class="step-detail">${details}</div>` : ''}
-      </div>
-    </div>
-  `;
-}
-
-// ── Accounts ──────────────────────────────────────────────────────────────
+// ── Accounts ───────────────────────────────────────────────────────────────
 async function loadAccounts() {
   try {
     const res = await api('GET', '/accounts');
     accounts = res.data;
     const grid = document.getElementById('accounts-grid');
-
     if (accounts.length === 0) {
       grid.innerHTML = `<div class="empty" style="grid-column:1/-1;padding:64px">
         <div class="empty-icon"><i data-lucide="landmark" style="width:24px;height:24px;color:var(--text3)"></i></div>
         <div class="empty-title">No accounts connected</div>
         <div class="empty-sub">Connect your Nigerian bank account to get started</div>
       </div>`;
-      lucide.createIcons();
-      return;
+      lucide.createIcons(); return;
     }
-
     grid.innerHTML = accounts.map(a => `
       <div class="account-card ${a.is_primary ? 'primary' : ''}">
         <div class="account-bank">
@@ -1355,12 +1259,9 @@ async function loadAccounts() {
             <i data-lucide="refresh-cw" style="width:13px;height:13px"></i> Sync Balance
           </button>
         </div>
-      </div>
-    `).join('');
+      </div>`).join('');
     lucide.createIcons();
-  } catch(e) {
-    toast('Failed to load accounts', 'error');
-  }
+  } catch(e) { toast('Failed to load accounts', 'error'); }
 }
 
 async function syncAccount(id) {
@@ -1368,70 +1269,47 @@ async function syncAccount(id) {
     toast('Syncing balance...', 'info');
     await api('POST', `/accounts/${id}/sync`);
     toast('Balance synced', 'success');
-    loadAccounts();
-    loadDashboard();
-  } catch(e) {
-    toast(e.message, 'error');
-  }
+    loadAccounts(); loadDashboard();
+  } catch(e) { toast(e.message, 'error'); }
 }
 
-// ── Contacts ──────────────────────────────────────────────────────────────
+// ── Contacts ───────────────────────────────────────────────────────────────
 let selectedWalletNetwork = null;
 
 async function loadContacts() {
   try {
     const res = await api('GET', '/contacts');
     const all = res.data;
-
-    // Split bank vs crypto
-    const bankContacts   = all.filter(c => c.type === 'bank' || (!c.type && c.bank_name));
-    const cryptoWallets  = all.filter(c => c.type === 'crypto' || (!c.type && (c.crypto_network || c.wallet_address)));
+    const bankContacts  = all.filter(c => c.type === 'bank' || (!c.type && c.bank_name));
+    const cryptoWallets = all.filter(c => c.type === 'crypto' || (!c.type && (c.crypto_network || c.wallet_address)));
     contacts = bankContacts;
 
-    // Bank contacts grid
     const grid = document.getElementById('contacts-grid');
-    if (bankContacts.length === 0) {
-      grid.innerHTML = `<div class="empty" style="grid-column:1/-1;padding:32px">
-        <div class="empty-icon"><i data-lucide="users" style="width:24px;height:24px;color:var(--text3)"></i></div>
-        <div class="empty-title">No bank contacts</div>
-        <div class="empty-sub">Add people you send money to regularly</div>
-      </div>`;
-    } else {
-      grid.innerHTML = bankContacts.map(c => `
-        <div class="contact-card">
-          <div class="contact-avatar">${c.label[0].toUpperCase()}</div>
-          <div class="contact-info">
-            <div class="contact-label">${c.label}</div>
-            <div class="contact-bank">${c.bank_name || ''}</div>
-            <div class="contact-num">${c.account_number || ''}</div>
-          </div>
-          <button onclick="deleteContact('${c.id}')" style="background:none;border:none;cursor:pointer;color:var(--text3);padding:4px">
-            <i data-lucide="trash-2" style="width:15px;height:15px"></i>
-          </button>
-        </div>
-      `).join('');
-    }
-
-    // Wallets grid
-    const wgrid = document.getElementById('wallets-grid');
-    if (cryptoWallets.length === 0) {
-      wgrid.innerHTML = `<div class="empty" style="grid-column:1/-1;padding:32px">
-        <div class="empty-icon"><i data-lucide="bitcoin" style="width:24px;height:24px;color:var(--text3)"></i></div>
-        <div class="empty-title">No crypto wallets</div>
-        <div class="empty-sub">Add wallets so Atlas can send crypto to them in your rules</div>
-      </div>`;
-    } else {
-      const netColors = { bep20:'var(--orange)', trc20:'var(--red)', erc20:'var(--purple)', polygon:'var(--purple)', solana:'var(--green)', arbitrum:'var(--accent)' };
-      const netBgs    = { bep20:'var(--orange-bg)', trc20:'var(--red-bg)', erc20:'var(--purple-bg)', polygon:'var(--purple-bg)', solana:'var(--green-bg)', arbitrum:'var(--accent-light)' };
-      wgrid.innerHTML = cryptoWallets.map(c => {
-        const net = (c.crypto_network || 'crypto').toLowerCase();
-        const color = netColors[net] || 'var(--text2)';
-        const bg    = netBgs[net]    || 'var(--surface2)';
-        const addr  = c.wallet_address || '';
-        const masked = addr.length > 12 ? addr.substring(0,6) + '...' + addr.substring(addr.length-6) : addr;
-        return `
+    grid.innerHTML = bankContacts.length === 0
+      ? `<div class="empty" style="grid-column:1/-1;padding:32px"><div class="empty-icon"><i data-lucide="users" style="width:24px;height:24px;color:var(--text3)"></i></div><div class="empty-title">No bank contacts</div><div class="empty-sub">Add people you send money to regularly</div></div>`
+      : bankContacts.map(c => `
           <div class="contact-card">
-            <div class="contact-avatar" style="background:${bg};color:${color};font-size:11px;font-weight:700">${(c.crypto_network||'?').toUpperCase().substring(0,3)}</div>
+            <div class="contact-avatar">${c.label[0].toUpperCase()}</div>
+            <div class="contact-info">
+              <div class="contact-label">${c.label}</div>
+              <div class="contact-bank">${c.bank_name || ''}</div>
+              <div class="contact-num">${c.account_number || ''}</div>
+            </div>
+            <button onclick="deleteContact('${c.id}')" style="background:none;border:none;cursor:pointer;color:var(--text3);padding:4px">
+              <i data-lucide="trash-2" style="width:15px;height:15px"></i>
+            </button>
+          </div>`).join('');
+
+    const wgrid = document.getElementById('wallets-grid');
+    wgrid.innerHTML = cryptoWallets.length === 0
+      ? `<div class="empty" style="grid-column:1/-1;padding:32px"><div class="empty-icon"><i data-lucide="bitcoin" style="width:24px;height:24px;color:var(--text3)"></i></div><div class="empty-title">No external wallets</div><div class="empty-sub">Add wallets so Atlas can send crypto to them</div></div>`
+      : cryptoWallets.map(c => {
+          const net = (c.crypto_network || '').toLowerCase();
+          const color = NET_COLORS[net] || 'var(--text2)';
+          const addr = c.wallet_address || '';
+          const masked = addr.length > 12 ? addr.substring(0,6)+'...'+addr.substring(addr.length-6) : addr;
+          return `<div class="contact-card">
+            <div class="contact-avatar" style="background:rgba(0,0,0,.05);color:${color};font-size:11px;font-weight:700">${(c.crypto_network||'?').toUpperCase().substring(0,3)}</div>
             <div class="contact-info">
               <div class="contact-label">${c.label}</div>
               <div class="contact-bank" style="color:${color}">${(c.crypto_network||'').toUpperCase()}</div>
@@ -1440,61 +1318,44 @@ async function loadContacts() {
             <button onclick="deleteContact('${c.id}')" style="background:none;border:none;cursor:pointer;color:var(--text3);padding:4px">
               <i data-lucide="trash-2" style="width:15px;height:15px"></i>
             </button>
-          </div>
-        `;
-      }).join('');
-    }
-
+          </div>`;
+        }).join('');
     lucide.createIcons();
-  } catch(e) {
-    toast('Failed to load contacts', 'error');
-  }
+  } catch(e) { toast('Failed to load contacts', 'error'); }
 }
 
 function openAddWallet() {
   selectedWalletNetwork = null;
   document.getElementById('wallet-label').value = '';
   document.getElementById('wallet-address').value = '';
-  document.querySelectorAll('#wallet-network-grid .rb-amount-type-card').forEach(el => el.classList.remove('selected'));
+  document.querySelectorAll('#wallet-network-grid .rb-net-card').forEach(el => el.classList.remove('selected'));
   openModal('wallet-modal');
 }
 
 function selectWalletNetwork(net) {
   selectedWalletNetwork = net;
-  document.querySelectorAll('#wallet-network-grid .rb-amount-type-card').forEach(el => {
-    el.classList.toggle('selected', el.dataset.net === net);
-  });
+  document.querySelectorAll('#wallet-network-grid .rb-net-card').forEach(el => el.classList.toggle('selected', el.dataset.net === net));
 }
 
 async function saveWallet() {
-  const label   = document.getElementById('wallet-label').value.trim();
+  const label = document.getElementById('wallet-label').value.trim();
   const address = document.getElementById('wallet-address').value.trim();
-  if (!label)               return toast('Enter a wallet label', 'error');
+  if (!label) return toast('Enter a wallet label', 'error');
   if (!selectedWalletNetwork) return toast('Select a network', 'error');
-  if (!address)             return toast('Enter the wallet address', 'error');
-
+  if (!address) return toast('Enter the wallet address', 'error');
   try {
-    await api('POST', '/contacts', {
-      label,
-      type:            'crypto',
-      wallet_address:  address,
-      crypto_network:  selectedWalletNetwork,
-      wallet_label:    label,
-    });
+    await api('POST', '/contacts', { label, type:'crypto', wallet_address:address, crypto_network:selectedWalletNetwork, wallet_label:label });
     closeModal('wallet-modal');
     toast(`"${label}" wallet saved`, 'success');
     loadContacts();
-  } catch(e) {
-    toast(e.message, 'error');
-  }
+  } catch(e) { toast(e.message, 'error'); }
 }
 
 async function loadBanks() {
   try {
     const res = await api('GET', '/contacts/banks');
     banks = res.data;
-    const sel = document.getElementById('contact-bank-select');
-    sel.innerHTML = banks.map(b => `<option value="${b.code}" data-name="${b.name}">${b.name}</option>`).join('');
+    document.getElementById('contact-bank-select').innerHTML = banks.map(b => `<option value="${b.code}" data-name="${b.name}">${b.name}</option>`).join('');
   } catch(e) {}
 }
 
@@ -1506,31 +1367,18 @@ function openAddContact(prefill = {}) {
 }
 
 async function saveContact() {
-  const label  = document.getElementById('contact-label').value.trim();
-  const name   = document.getElementById('contact-account-name').value.trim();
-  const number = document.getElementById('contact-account-number').value.trim();
-  const sel    = document.getElementById('contact-bank-select');
-  const bankCode = sel.value;
-  const bankName = sel.options[sel.selectedIndex]?.dataset.name || sel.options[sel.selectedIndex]?.text;
-
-  if (!label || !name || !number || !bankCode) return toast('Fill in all fields', 'error');
-  if (number.length !== 10) return toast('Account number must be 10 digits', 'error');
-
+  const label = document.getElementById('contact-label').value.trim();
+  const name  = document.getElementById('contact-account-name').value.trim();
+  const num   = document.getElementById('contact-account-number').value.trim();
+  const sel   = document.getElementById('contact-bank-select');
+  if (!label || !name || !num || !sel.value) return toast('Fill in all fields', 'error');
+  if (num.length !== 10) return toast('Account number must be 10 digits', 'error');
   try {
-    await api('POST', '/contacts', {
-      label, type: 'bank',
-      account_name: name,
-      account_number: number,
-      bank_code: bankCode,
-      bank_name: bankName,
-    });
-    closeModal('contact-modal');
-    closeModal('device-modal');
+    await api('POST', '/contacts', { label, type:'bank', account_name:name, account_number:num, bank_code:sel.value, bank_name:sel.options[sel.selectedIndex]?.dataset.name || sel.options[sel.selectedIndex]?.text });
+    closeModal('contact-modal'); closeModal('device-modal');
     toast(`"${label}" saved`, 'success');
     loadContacts();
-  } catch(e) {
-    toast(e.message, 'error');
-  }
+  } catch(e) { toast(e.message, 'error'); }
 }
 
 async function deleteContact(id) {
@@ -1539,90 +1387,60 @@ async function deleteContact(id) {
     await api('DELETE', `/contacts/${id}`);
     toast('Contact removed', 'success');
     loadContacts();
-  } catch(e) {
-    toast(e.message, 'error');
-  }
+  } catch(e) { toast(e.message, 'error'); }
 }
 
 async function openDevicePicker() {
   try {
     const res = await api('GET', '/contacts/device');
-    const list = document.getElementById('device-contacts-list');
-    list.innerHTML = res.data.map(c => `
+    document.getElementById('device-contacts-list').innerHTML = res.data.map(c => `
       <div class="device-contact-item" onclick="selectDeviceContact('${c.name}')">
         <div class="device-avatar">${c.name[0]}</div>
-        <div>
-          <div style="font-size:14px;font-weight:500">${c.name}</div>
-          <div style="font-size:12px;color:var(--text3)">${c.phone}</div>
-        </div>
-      </div>
-    `).join('');
+        <div><div style="font-size:14px;font-weight:500">${c.name}</div><div style="font-size:12px;color:var(--text3)">${c.phone}</div></div>
+      </div>`).join('');
     openModal('device-modal');
-  } catch(e) {
-    toast('Could not load contacts', 'error');
-  }
+  } catch(e) { toast('Could not load contacts', 'error'); }
 }
 
-function selectDeviceContact(name) {
-  closeModal('device-modal');
-  openAddContact({name});
-}
+function selectDeviceContact(name) { closeModal('device-modal'); openAddContact({name}); }
 
-// ── Ledger ────────────────────────────────────────────────────────────────
+// ── Ledger ─────────────────────────────────────────────────────────────────
 async function loadLedger() {
   try {
     const res = await api('GET', '/ledger');
     const tbody = document.getElementById('ledger-body');
-
-    if (res.data.length === 0) {
+    if (!res.data || res.data.length === 0) {
       tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:48px;color:var(--text3)">No transactions yet</td></tr>`;
       return;
     }
-
     tbody.innerHTML = res.data.map(e => `
       <tr>
         <td><span class="badge ${e.type === 'credit' ? 'badge-green' : 'badge-red'}">${e.type}</span></td>
         <td style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.description}</td>
         <td class="${e.type === 'credit' ? 'amount-credit' : 'amount-debit'}">${e.amount}</td>
         <td><span class="badge badge-gray">${e.currency}</span></td>
-        <td class="ref-code">${e.reference?.substring(0,16)}...</td>
+        <td class="ref-code">${(e.reference||'').substring(0,16)}...</td>
         <td style="color:var(--text3);font-size:12.5px">${formatDate(e.date)}</td>
-      </tr>
-    `).join('');
-  } catch(e) {
-    toast('Failed to load ledger', 'error');
-  }
+      </tr>`).join('');
+  } catch(e) { toast('Failed to load ledger', 'error'); }
 }
 
-// ── Navigation ────────────────────────────────────────────────────────────
+// ── Navigation ─────────────────────────────────────────────────────────────
 function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-
   document.getElementById(`page-${name}`).classList.add('active');
   document.querySelector(`[data-page="${name}"]`)?.classList.add('active');
-
-  const loaders = {
-    dashboard: loadDashboard,
-    rules:     loadRules,
-    accounts:  loadAccounts,
-    contacts:  loadContacts,
-    ledger:    loadLedger,
-  };
-  loaders[name]?.();
+  ({ dashboard:loadDashboard, rules:loadRules, wallet:loadWallet, accounts:loadAccounts, contacts:loadContacts, ledger:loadLedger, receipts:loadReceipts })[name]?.();
 }
 
-// ── Modal helpers ─────────────────────────────────────────────────────────
-function openModal(id) {
-  document.getElementById(id).classList.add('open');
-}
-function closeModal(id) {
-  document.getElementById(id).classList.remove('open');
-}
+// ── Modals ─────────────────────────────────────────────────────────────────
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
-// ── Toast ─────────────────────────────────────────────────────────────────
+// ── Toast ──────────────────────────────────────────────────────────────────
 function toast(msg, type = 'info') {
-  const icons = {success:'check-circle',error:'alert-circle',info:'info'};
+  const icons = { success:'check-circle', error:'alert-circle', info:'info' };
   const el = document.createElement('div');
   el.className = `toast ${type}`;
   el.innerHTML = `<i data-lucide="${icons[type]}" style="width:16px;height:16px"></i>${msg}`;
@@ -1631,17 +1449,12 @@ function toast(msg, type = 'info') {
   setTimeout(() => el.remove(), 3500);
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────
 function formatDate(d) {
-  return new Date(d).toLocaleDateString('en-NG', {day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+  return new Date(d).toLocaleDateString('en-NG', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
 }
 
-// ── Boot ──────────────────────────────────────────────────────────────────
-if (token) {
-  initApp();
-} else {
-  document.getElementById('auth-screen').style.display = 'flex';
-}
+// ── Boot ───────────────────────────────────────────────────────────────────
+if (token) { initApp(); } else { document.getElementById('auth-screen').style.display = 'flex'; }
 </script>
 </body>
 </html>

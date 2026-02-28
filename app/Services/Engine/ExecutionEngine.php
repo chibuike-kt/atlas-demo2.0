@@ -33,50 +33,84 @@ class ExecutionEngine
     $account    = $rule->connectedAccount;
     $feeService = new FeeService();
 
-    // ── Resolve total amount ──────────────────────────────────────────────
-    $totalAmount = $this->resolveAmount($rule, $account);
+    // ── 1. Load ordered actions ───────────────────────────────────────────
+    $actions        = $rule->actions()->orderBy('step_order')->get();
+    $totalStepCount = $actions->count();
 
-    // ── Validate balance ──────────────────────────────────────────────────
-    if ((float) $account->balance < (float) $totalAmount) {
+    // ── 2. Resolve the movement amount (what the rule distributes) ────────
+    $movementAmount = $this->resolveMovementAmount($rule, $account);
+
+    // ── 3. Calculate service charge ───────────────────────────────────────
+    // Like a bank transfer fee: user pays movement + charge together.
+    // The charge is NEVER shown to the user as a line item — it is simply
+    // baked into the total debit, exactly like GTBank, Access, Paystack do.
+    $execFeeData   = $feeService->executionFee($totalStepCount);
+    $execFeeNgn    = (string) $execFeeData['fee_amount_ngn']; // e.g. "20.000000"
+
+    // ── 4. Total debit = movement + service charge ────────────────────────
+    // This is the single number that leaves the user's account.
+    // Receipt will show: "Moved ₦X,XXX.XX · Service charge ₦20 · Total ₦X,XXX.XX+20"
+    // but NOT expose what the service charge is for internally.
+    $totalDebit = bcadd($movementAmount, $execFeeNgn, 6);
+
+    // ── 5. Balance check against total debit ─────────────────────────────
+    $currentBalance = (string) $account->balance;
+    if (bccomp($currentBalance, $totalDebit, 2) < 0) {
+      $needed    = number_format((float) $totalDebit, 2);
+      $available = number_format((float) $currentBalance, 2);
+      $charge    = number_format((float) $execFeeNgn, 2);
+      $movement  = number_format((float) $movementAmount, 2);
       throw new \RuntimeException(
-        "Insufficient balance. Available: ₦" . number_format($account->balance, 2) .
-          ", Required: ₦" . number_format((float) $totalAmount, 2)
+        "Insufficient balance. Available: ₦{$available}, " .
+          "Required: ₦{$needed} (₦{$movement} + ₦{$charge} service charge)"
       );
     }
 
-    // ── Load actions ──────────────────────────────────────────────────────
-    $actions = $rule->actions()->orderBy('step_order')->get();
-
-    // ── Pre-calculate execution fee (one flat fee for all steps) ──────────
-    $totalStepCount      = $actions->count();
-    $execFeeData         = $feeService->executionFee($totalStepCount);
-    $execFeeAmount       = $execFeeData['fee_amount_ngn'];
-    $execFeeRecorded     = false; // ensure we only record it once
-
-    // ── Create execution record ───────────────────────────────────────────
+    // ── 6. Create execution record ────────────────────────────────────────
     $execution = RuleExecution::create([
-      'rule_id'          => $rule->id,
-      'user_id'          => $user->id,
-      'triggered_by'     => $triggeredBy,
-      'rule_snapshot'    => $rule->snapshot(),
-      'total_amount_ngn' => $totalAmount,
-      'status'           => 'running',
-      'started_at'       => now(),
+      'rule_id'             => $rule->id,
+      'user_id'             => $user->id,
+      'triggered_by'        => $triggeredBy,
+      'rule_snapshot'       => $rule->snapshot(),
+      'total_amount_ngn'    => $movementAmount,  // movement only — used for step distribution
+      'service_charge_ngn'  => $execFeeNgn,      // internal — not shown to user
+      'total_debit_ngn'     => $totalDebit,       // actual amount leaving account
+      'status'              => 'running',
+      'started_at'          => now(),
     ]);
 
-    // ── Debit account ─────────────────────────────────────────────────────
+    // ── 7. Single debit: movement + charge leaves the account together ────
+    // We do ONE debit for the full amount so the ledger is clean.
     $this->ledger->recordDebit(
-      $execution,
-      $user,
-      $totalAmount,
-      "Rule: {$rule->name} — debited from {$account->institution_name}"
+      execution: $execution,
+      user: $user,
+      amount: $totalDebit,
+      description: "Atlas rule \"{$rule->name}\"",
+      serviceCharge: $execFeeNgn
     );
-    $account->decrement('balance', (float) $totalAmount);
+    // Actually decrement the account balance — this is what was missing before
+    $account->decrement('balance', (float) $totalDebit);
 
-    // ── Execute each step ─────────────────────────────────────────────────
+    // ── 8. Record Atlas revenue (internal only, never user-visible) ───────
+    if ((float) $execFeeNgn > 0) {
+      FeeLedger::create([
+        'user_id'            => $user->id,
+        'execution_id'       => $execution->id,
+        'execution_step_id'  => null,
+        'fee_type'           => 'service_charge',
+        'transaction_amount' => $movementAmount,
+        'fee_amount'         => $execFeeNgn,
+        'fee_rate'           => $execFeeNgn,
+        'currency'           => 'NGN',
+        'description'        => $execFeeData['description'],
+        'meta'               => $execFeeData,
+      ]);
+    }
+
+    // ── 9. Execute each step ──────────────────────────────────────────────
     foreach ($actions as $action) {
-      $stepAmount = $action->resolveAmount($totalAmount);
-      $config     = is_array($action->config)
+      $stepAmountNgn = $action->resolveAmount($movementAmount);
+      $config        = is_array($action->config)
         ? $action->config
         : (json_decode($action->config, true) ?? []);
       $config['user_id'] = $user->id;
@@ -87,102 +121,62 @@ class ExecutionEngine
         'step_order'     => $action->step_order,
         'action_type'    => $action->action_type,
         'label'          => $action->label,
-        'amount_ngn'     => $stepAmount,
+        'amount_ngn'     => $stepAmountNgn,
         'status'         => 'running',
         'started_at'     => now(),
       ]);
 
       try {
         $adapter = $this->resolveAdapter($action->action_type);
-        $result  = $adapter->execute($config, (float) $stepAmount);
+        $result  = $adapter->execute($config, (float) $stepAmountNgn);
 
-        // ── Mark step complete ────────────────────────────────────────
         $step->update([
           'status'           => 'completed',
           'rail_reference'   => $result['rail_reference'],
           'result'           => $result['result'],
-          'rollback_payload' => $result['rollback_payload'],
+          'rollback_payload' => $result['rollback_payload'] ?? null,
           'completed_at'     => now(),
         ]);
 
-        // ── Ledger credit ─────────────────────────────────────────────
-        $currency = $action->action_type === 'convert_crypto' ? 'USDT' : 'NGN';
-        $this->ledger->recordStepCredit(
-          $execution,
-          $step,
-          $user,
-          $stepAmount,
-          $currency,
-          $action->label ?? $action->action_type,
-          $result['rail_reference']
-        );
+        // ── Credit ledger — crypto steps use token denomination ────────
+        // For NGN steps: credit in NGN
+        // For crypto steps: credit in USDT (or token) — NOT in NGN equivalent
+        // This is what the user actually received — the USDT amount.
+        $isCrypto = $action->action_type === 'convert_crypto';
+        if ($isCrypto) {
+          $tokenAmt  = (string) ($result['result']['amount_token'] ?? '0');
+          $token     = $result['result']['token'] ?? 'USDT';
+          $network   = $result['result']['network'] ?? 'trc20';
 
-        // ── Fee recording (inline to preserve variable scope) ─────────
-        try {
-          // Execution fee: charged once on the first completed step
-          if (!$execFeeRecorded && $execFeeAmount > 0) {
-            $execFeeRecorded = true;
-            FeeLedger::create([
-              'user_id'            => $user->id,
-              'execution_id'       => $execution->id,
-              'execution_step_id'  => $step->id,
-              'fee_type'           => 'execution',
-              'transaction_amount' => $totalAmount,
-              'fee_amount'         => $execFeeAmount,
-              'fee_rate'           => $execFeeAmount,
-              'currency'           => 'NGN',
-              'description'        => $feeService->executionFeeDescription(
-                $execFeeAmount,
-                $totalStepCount
-              ),
-              'meta'               => $execFeeData,
-            ]);
-          }
+          $this->ledger->recordCryptoCredit(
+            execution: $execution,
+            step: $step,
+            user: $user,
+            amountNgn: $stepAmountNgn,   // NGN spent (for audit)
+            amountToken: $tokenAmt,        // USDT received (for display)
+            token: $token,
+            network: $network,
+            description: $action->label ?? "Converted to {$token}",
+            reference: $result['rail_reference']
+          );
 
-          // Crypto conversion fee: charged per conversion step
-          if ($action->action_type === 'convert_crypto') {
-            $cryptoFee = $feeService->cryptoConversionFee(
-              (float) $stepAmount,
-              $config['token'] ?? 'USDT'
-            );
-            if ($cryptoFee['fee_amount_ngn'] > 0) {
-              FeeLedger::create([
-                'user_id'            => $user->id,
-                'execution_id'       => $execution->id,
-                'execution_step_id'  => $step->id,
-                'fee_type'           => 'crypto_conversion',
-                'transaction_amount' => $stepAmount,
-                'fee_amount'         => $cryptoFee['fee_amount_ngn'],
-                'fee_rate'           => $cryptoFee['fee_rate'],
-                'currency'           => 'NGN',
-                'description'        => $cryptoFee['description'],
-                'meta'               => $cryptoFee,
-              ]);
-            }
-          }
+          // FX margin is baked into the rate — record for Atlas revenue tracking
+          $this->recordCryptoRevenue($feeService, $execution, $step, $user, $stepAmountNgn, $config, $result);
 
-          // pay_bill      → ₦0 to user (Atlas earns biller commission silently)
-          // save_piggyvest → ₦0 (pending partnership)
-          // save_cowrywise → ₦0 (pending partnership)
-          // send_bank     → covered by execution fee above
-
-        } catch (\Throwable $e) {
-          // Fee failure must never break execution
-          Log::warning("Fee recording failed for step {$step->id}: " . $e->getMessage());
-        }
-
-        // ── Update Atlas in-app wallet for crypto conversions ─────────
-        if ($action->action_type === 'convert_crypto') {
-          $this->updateAtlasWallet(
-            $user->id,
-            $result['result']['network']      ?? 'trc20',
-            $result['result']['token']        ?? 'USDT',
-            (string) ($result['result']['amount_token'] ?? '0'),
-            $config['wallet_label']           ?? 'Atlas Wallet'
+          // Update Atlas in-app wallet balance
+          $this->creditAtlasWallet($user->id, $network, $token, $tokenAmt);
+        } else {
+          $this->ledger->recordStepCredit(
+            execution: $execution,
+            step: $step,
+            user: $user,
+            amount: $stepAmountNgn,
+            currency: 'NGN',
+            description: $action->label ?? $action->action_type,
+            reference: $result['rail_reference']
           );
         }
       } catch (\Throwable $e) {
-        // ── Step failed — mark and rollback ───────────────────────────
         $step->update([
           'status'        => 'failed',
           'error_message' => $e->getMessage(),
@@ -195,10 +189,9 @@ class ExecutionEngine
           'completed_at'  => now(),
         ]);
 
-        // Restore account balance
-        $account->increment('balance', (float) $totalAmount);
+        // Restore full debit (movement + service charge) on failure
+        $account->increment('balance', (float) $totalDebit);
 
-        // Roll back all completed steps
         $this->rollback->rollback($execution->fresh());
 
         activity()
@@ -213,7 +206,7 @@ class ExecutionEngine
       }
     }
 
-    // ── All steps completed ───────────────────────────────────────────────
+    // ── 10. Mark complete ─────────────────────────────────────────────────
     $execution->update([
       'status'       => 'completed',
       'completed_at' => now(),
@@ -222,7 +215,7 @@ class ExecutionEngine
     $rule->increment('execution_count');
     $rule->update(['last_triggered_at' => now()]);
 
-    // ── Auto-generate receipt ─────────────────────────────────────────────
+    // ── 11. Generate receipt ──────────────────────────────────────────────
     try {
       (new ReceiptService())->generate(
         $execution->fresh(['steps', 'user', 'rule'])
@@ -234,20 +227,72 @@ class ExecutionEngine
     activity()
       ->causedBy($user)
       ->performedOn($execution)
-      ->withProperties(['total_ngn' => $totalAmount, 'steps' => $actions->count()])
+      ->withProperties([
+        'movement_ngn'     => $movementAmount,
+        'service_charge'   => $execFeeNgn,
+        'total_debit'      => $totalDebit,
+        'steps'            => $actions->count(),
+      ])
       ->log('execution.completed');
 
     return $execution->fresh(['steps']);
   }
 
-  // ── Atlas in-app wallet update ────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────────────
+    // Private helpers
+    // ─────────────────────────────────────────────────────────────────────────
 
-  private function updateAtlasWallet(
+  /**
+   * Record FX spread revenue for crypto conversions.
+   * This is Atlas's margin baked into the buy rate — never shown to the user.
+   * Spenda-style: user deposits $150, gets value for $148.65 — the $1.35 is margin.
+   */
+  private function recordCryptoRevenue(
+    FeeService     $feeService,
+    RuleExecution  $execution,
+    ExecutionStep  $step,
+    mixed          $user,
+    string         $stepAmountNgn,
+    array          $config,
+    array          $result
+  ): void {
+    try {
+      $cryptoFee = $feeService->cryptoConversionFee(
+        (float) $stepAmountNgn,
+        $config['token'] ?? 'USDT'
+      );
+      if ($cryptoFee['fee_amount_ngn'] > 0) {
+        FeeLedger::create([
+          'user_id'            => $user->id,
+          'execution_id'       => $execution->id,
+          'execution_step_id'  => $step->id,
+          'fee_type'           => 'fx_margin',        // renamed from crypto_conversion for clarity
+          'transaction_amount' => $stepAmountNgn,
+          'fee_amount'         => $cryptoFee['fee_amount_ngn'],
+          'fee_rate'           => $cryptoFee['fee_rate'],
+          'currency'           => 'NGN',
+          'description'        => $cryptoFee['description'],
+          'meta'               => array_merge($cryptoFee, [
+            'atlas_rate'    => $result['result']['atlas_rate']  ?? null,
+            'market_rate'   => $result['result']['market_rate'] ?? null,
+            'amount_token'  => $result['result']['amount_token'] ?? null,
+            'token'         => $result['result']['token']        ?? null,
+          ]),
+        ]);
+      }
+    } catch (\Throwable $e) {
+      Log::warning("FX margin record failed for step {$step->id}: " . $e->getMessage());
+    }
+  }
+
+  /**
+   * Credit the user's Atlas in-app wallet after a successful conversion.
+   */
+  private function creditAtlasWallet(
     string $userId,
     string $network,
     string $token,
-    string $amountToken,
-    string $label
+    string $amountToken
   ): void {
     try {
       $wallet = AtlasWallet::firstOrNew([
@@ -260,19 +305,19 @@ class ExecutionEngine
         $wallet->address = AtlasWallet::generateAddress($network);
       }
 
-      $wallet->wallet_label    = $label;
-      $wallet->balance         = bcadd((string) ($wallet->balance        ?? '0'), $amountToken, 8);
-      $wallet->total_deposited = bcadd((string) ($wallet->total_deposited ?? '0'), $amountToken, 8);
+      $wallet->balance         = bcadd((string)($wallet->balance         ?? '0'), $amountToken, 8);
+      $wallet->total_deposited = bcadd((string)($wallet->total_deposited ?? '0'), $amountToken, 8);
       $wallet->last_activity_at = now();
       $wallet->save();
     } catch (\Throwable $e) {
-      Log::warning("Atlas wallet update failed: " . $e->getMessage());
+      Log::warning("Atlas wallet credit failed: " . $e->getMessage());
     }
   }
 
-  // ── Amount resolver ───────────────────────────────────────────────────────
-
-  private function resolveAmount(Rule $rule, ConnectedAccount $account): string
+  /**
+   * Resolve how much NGN the rule is moving (excluding service charge).
+   */
+  private function resolveMovementAmount(Rule $rule, ConnectedAccount $account): string
   {
     return match ($rule->total_amount_type) {
       'fixed'        => (string) $rule->total_amount,
@@ -282,11 +327,11 @@ class ExecutionEngine
         '100',
         6
       ),
-      default => throw new \RuntimeException('Unknown amount type: ' . $rule->total_amount_type),
+      default        => throw new \RuntimeException(
+        'Unknown amount type: ' . $rule->total_amount_type
+      ),
     };
   }
-
-  // ── Rail adapter resolver ─────────────────────────────────────────────────
 
   private function resolveAdapter(string $actionType): mixed
   {
@@ -296,7 +341,7 @@ class ExecutionEngine
       'save_cowrywise' => new CowrywiseRail(),
       'convert_crypto' => new CryptoRail(),
       'pay_bill'       => new BillRail(),
-      default          => throw new \RuntimeException("No adapter found for action type: {$actionType}"),
+      default          => throw new \RuntimeException("No adapter for action type: {$actionType}"),
     };
   }
 }

@@ -19,6 +19,8 @@ class RuleExecution extends Model
         'triggered_by',
         'rule_snapshot',
         'total_amount_ngn',
+        'service_charge_ngn',
+        'total_debit_ngn',
         'status',
         'started_at',
         'completed_at',
@@ -33,6 +35,8 @@ class RuleExecution extends Model
             'started_at'      => 'datetime',
             'completed_at'    => 'datetime',
             'created_at'      => 'datetime',
+            'service_charge_ngn' => 'decimal:6',
+            'total_debit_ngn'    => 'decimal:6',
         ];
     }
 
