@@ -1,220 +1,282 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Services\Engine;
 
-use App\Http\Controllers\Controller;
+use App\Models\AtlasWallet;
+use App\Models\ConnectedAccount;
+use App\Models\ExecutionStep;
+use App\Models\FeeLedger;
 use App\Models\Rule;
 use App\Models\RuleExecution;
-use App\Services\Engine\ExecutionEngine;
-use App\Services\Security\IdempotencyService;
-use App\Services\Security\VelocityService;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use App\Services\EncryptionService;
+use App\Services\FeeService;
+use App\Services\LedgerService;
+use App\Services\ReceiptService;
+use App\Services\Security\StepRetryService;
+use App\Services\Rails\BillRail;
+use App\Services\Rails\CowrywiseRail;
+use App\Services\Rails\CryptoRail;
+use App\Services\Rails\FiatRail;
+use App\Services\Rails\PiggyVestRail;
 use Illuminate\Support\Facades\Log;
 
-class ExecutionController extends Controller
+class ExecutionEngine
 {
     public function __construct(
-        private readonly ExecutionEngine    $engine,
-        private readonly IdempotencyService $idempotency,
-        private readonly VelocityService    $velocity,
+        private readonly LedgerService     $ledger,
+        private readonly RollbackManager   $rollback,
+        private readonly EncryptionService $encryption,
+        private readonly StepRetryService  $retry,   // NEW — injected by container
     ) {}
 
-    /**
-     * Execute a rule.
-     *
-     * Security layers applied in order:
-     *   1. Ownership check    — rule belongs to authenticated user
-     *   2. Active check       — rule must be enabled
-     *   3. Idempotency check  — return existing result if this key was already processed
-     *   4. Execution lock     — prevent parallel execution of same rule
-     *   5. Velocity check     — fraud rate limiting
-     *   6. Execute            — engine runs with retry logic
-     *   7. Record idempotency result for future retries
-     */
-    public function execute(Request $request, string $id): JsonResponse
+    public function execute(Rule $rule, string $triggeredBy = 'manual'): RuleExecution
     {
-        $user = auth()->user();
+        $user       = $rule->user;
+        $account    = $rule->connectedAccount;
+        $feeService = new FeeService();
 
-        // ── 1. Ownership ──────────────────────────────────────────────────────
-        $rule = Rule::where('user_id', $user->id)->findOrFail($id);
+        $actions        = $rule->actions()->orderBy('step_order')->get();
+        $totalStepCount = $actions->count();
 
-        // ── 2. Active check ───────────────────────────────────────────────────
-        if (!$rule->is_active) {
-            return response()->json([
-                'success' => false,
-                'message' => 'This rule is disabled. Enable it before executing.',
-            ], 422);
+        $movementAmount = $this->resolveMovementAmount($rule, $account);
+
+        $execFeeData   = $feeService->executionFee($totalStepCount);
+        $execFeeNgn    = (string) $execFeeData['fee_amount_ngn'];
+        $totalDebit    = bcadd($movementAmount, $execFeeNgn, 6);
+
+        // Balance check
+        if (bccomp((string) $account->balance, $totalDebit, 2) < 0) {
+            $needed    = number_format((float) $totalDebit, 2);
+            $available = number_format((float) $account->balance, 2);
+            $charge    = number_format((float) $execFeeNgn, 2);
+            $movement  = number_format((float) $movementAmount, 2);
+            throw new \RuntimeException(
+                "Insufficient balance. Available: ₦{$available}, " .
+                    "Required: ₦{$needed} (₦{$movement} + ₦{$charge} service charge)"
+            );
         }
 
-        // ── 3. Idempotency ────────────────────────────────────────────────────
-        // Client sends X-Idempotency-Key header (UUID). If absent, we generate
-        // a key from user+rule+current-minute (safe for manual triggers).
-        $idempotencyKey = $request->header('X-Idempotency-Key')
-            ?? hash('sha256', "{$user->id}:{$rule->id}:" . date('YmdHi'));
+        // Create execution record
+        $execution = RuleExecution::create([
+            'rule_id'            => $rule->id,
+            'user_id'            => $user->id,
+            'triggered_by'       => $triggeredBy,
+            'rule_snapshot'      => $rule->snapshot(),
+            'total_amount_ngn'   => $movementAmount,
+            'service_charge_ngn' => $execFeeNgn,
+            'total_debit_ngn'    => $totalDebit,
+            'status'             => 'running',
+            'started_at'         => now(),
+        ]);
 
-        $existingExecutionId = $this->idempotency->getExistingResult(
-            $user->id,
-            $rule->id,
-            $idempotencyKey
+        // Single debit — movement + service charge leaves together
+        $this->ledger->recordDebit(
+            execution: $execution,
+            user: $user,
+            amount: $totalDebit,
+            description: "Atlas rule \"{$rule->name}\"",
+            serviceCharge: $execFeeNgn
         );
+        $account->decrement('balance', (float) $totalDebit);
 
-        if ($existingExecutionId) {
-            $existing = RuleExecution::with('steps')->find($existingExecutionId);
-            if ($existing) {
-                return response()->json([
-                    'success'     => true,
-                    'idempotent'  => true, // tells client this is a cached response
-                    'message'     => 'Execution already completed for this request.',
-                    'data'        => $this->formatExecution($existing),
-                ]);
-            }
+        // Record Atlas service charge revenue (internal only)
+        if ((float) $execFeeNgn > 0) {
+            FeeLedger::create([
+                'user_id'            => $user->id,
+                'execution_id'       => $execution->id,
+                'execution_step_id'  => null,
+                'fee_type'           => 'service_charge',
+                'transaction_amount' => $movementAmount,
+                'fee_amount'         => $execFeeNgn,
+                'fee_rate'           => $execFeeNgn,
+                'currency'           => 'NGN',
+                'description'        => $execFeeData['description'],
+                'meta'               => $execFeeData,
+            ]);
         }
 
-        // ── 4. Execution lock (prevents parallel runs) ─────────────────────────
-        try {
-            $lock = $this->idempotency->acquireLock($user->id, $rule->id, $idempotencyKey);
-        } catch (\RuntimeException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 429);
-        }
+        // Execute each step with retry
+        foreach ($actions as $action) {
+            $stepAmountNgn = $action->resolveAmount($movementAmount);
+            $config        = is_array($action->config)
+                ? $action->config
+                : (json_decode($action->config, true) ?? []);
+            $config['user_id'] = $user->id;
 
-        try {
-            // ── 5. Velocity / fraud checks ────────────────────────────────────
-            $rule->load('connectedAccount');
-            $movementAmount = $this->resolveMovementAmount($rule);
+            $step = ExecutionStep::create([
+                'execution_id'   => $execution->id,
+                'rule_action_id' => $action->id,
+                'step_order'     => $action->step_order,
+                'action_type'    => $action->action_type,
+                'label'          => $action->label,
+                'amount_ngn'     => $stepAmountNgn,
+                'status'         => 'running',
+                'started_at'     => now(),
+            ]);
 
             try {
-                $this->velocity->check($user, $rule->id, (float) $movementAmount);
-            } catch (\RuntimeException $e) {
-                Log::warning("Velocity check blocked execution", [
-                    'user_id' => $user->id,
-                    'rule_id' => $rule->id,
-                    'amount'  => $movementAmount,
-                    'reason'  => $e->getMessage(),
+                $adapter = $this->resolveAdapter($action->action_type);
+
+                // ── Retry wrapper — transient failures retry up to 3 times ────
+                // Permanent failures (invalid account, fraud) throw immediately.
+                $result = $this->retry->execute(
+                    fn() => $adapter->execute($config, (float) $stepAmountNgn),
+                    $action->label ?? $action->action_type
+                );
+
+                $step->update([
+                    'status'           => 'completed',
+                    'rail_reference'   => $result['rail_reference'],
+                    'result'           => $result['result'],
+                    'rollback_payload' => $result['rollback_payload'] ?? null,
+                    'completed_at'     => now(),
                 ]);
 
-                return response()->json([
-                    'success' => false,
-                    'message' => $e->getMessage(),
-                    'code'    => 'VELOCITY_LIMIT',
-                ], $e->getCode() ?: 429);
+                // Ledger credit — crypto in token units, NGN in naira
+                $isCrypto = $action->action_type === 'convert_crypto';
+                if ($isCrypto) {
+                    $tokenAmt = (string)($result['result']['amount_token'] ?? '0');
+                    $token    = $result['result']['token']   ?? 'USDT';
+                    $network  = $result['result']['network'] ?? 'trc20';
+
+                    $this->ledger->recordCryptoCredit(
+                        execution: $execution,
+                        step: $step,
+                        user: $user,
+                        amountNgn: $stepAmountNgn,
+                        amountToken: $tokenAmt,
+                        token: $token,
+                        network: $network,
+                        description: $action->label ?? "Converted to {$token}",
+                        reference: $result['rail_reference']
+                    );
+
+                    $this->recordCryptoRevenue($feeService, $execution, $step, $user, $stepAmountNgn, $config, $result);
+                    $this->creditAtlasWallet($user->id, $network, $token, $tokenAmt);
+                } else {
+                    $this->ledger->recordStepCredit(
+                        execution: $execution,
+                        step: $step,
+                        user: $user,
+                        amount: $stepAmountNgn,
+                        currency: 'NGN',
+                        description: $action->label ?? $action->action_type,
+                        reference: $result['rail_reference']
+                    );
+                }
+            } catch (\Throwable $e) {
+                $step->update([
+                    'status'        => 'failed',
+                    'error_message' => $e->getMessage(),
+                    'completed_at'  => now(),
+                ]);
+
+                $execution->update([
+                    'status'        => 'failed',
+                    'error_message' => "Step {$action->step_order} failed: " . $e->getMessage(),
+                    'completed_at'  => now(),
+                ]);
+
+                // Restore full debit on rollback
+                $account->increment('balance', (float) $totalDebit);
+                $this->rollback->rollback($execution->fresh());
+
+                activity()
+                    ->causedBy($user)
+                    ->performedOn($execution)
+                    ->withProperties(['step' => $action->step_order, 'error' => $e->getMessage()])
+                    ->log('execution.failed');
+
+                throw new \RuntimeException(
+                    "Execution failed at step {$action->step_order} ({$action->label}): " . $e->getMessage()
+                );
             }
+        }
 
-            // ── 6. Execute ────────────────────────────────────────────────────
-            $execution = $this->engine->execute($rule, 'manual');
+        $execution->update(['status' => 'completed', 'completed_at' => now()]);
+        $rule->increment('execution_count');
+        $rule->update(['last_triggered_at' => now()]);
 
-            // ── 7. Record idempotency result ──────────────────────────────────
-            $this->idempotency->recordResult($user->id, $rule->id, $idempotencyKey, $execution->id);
+        try {
+            (new ReceiptService())->generate($execution->fresh(['steps', 'user', 'rule']));
+        } catch (\Throwable $e) {
+            Log::warning("Receipt generation failed: " . $e->getMessage());
+        }
 
-            // Invalidate velocity average cache so next anomaly check is fresh
-            $this->velocity->invalidateAverageCache($user->id);
+        activity()
+            ->causedBy($user)
+            ->performedOn($execution)
+            ->withProperties([
+                'movement_ngn'   => $movementAmount,
+                'service_charge' => $execFeeNgn,
+                'total_debit'    => $totalDebit,
+                'steps'          => $actions->count(),
+            ])
+            ->log('execution.completed');
 
-            return response()->json([
-                'success' => true,
-                'data'    => $this->formatExecution($execution),
-            ]);
-        } catch (\RuntimeException $e) {
-            Log::error("Execution failed", [
-                'user_id' => $user->id,
-                'rule_id' => $rule->id,
-                'error'   => $e->getMessage(),
-            ]);
+        return $execution->fresh(['steps']);
+    }
 
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 422);
-        } finally {
-            // Always release lock — even on exception
-            $lock?->release();
+    private function recordCryptoRevenue(FeeService $feeService, RuleExecution $execution, ExecutionStep $step, mixed $user, string $stepAmountNgn, array $config, array $result): void
+    {
+        try {
+            $cryptoFee = $feeService->cryptoConversionFee((float) $stepAmountNgn, $config['token'] ?? 'USDT');
+            if ($cryptoFee['fee_amount_ngn'] > 0) {
+                FeeLedger::create([
+                    'user_id'            => $user->id,
+                    'execution_id'       => $execution->id,
+                    'execution_step_id'  => $step->id,
+                    'fee_type'           => 'fx_margin',
+                    'transaction_amount' => $stepAmountNgn,
+                    'fee_amount'         => $cryptoFee['fee_amount_ngn'],
+                    'fee_rate'           => $cryptoFee['fee_rate'],
+                    'currency'           => 'NGN',
+                    'description'        => $cryptoFee['description'],
+                    'meta'               => array_merge($cryptoFee, [
+                        'atlas_rate'   => $result['result']['atlas_rate']   ?? null,
+                        'market_rate'  => $result['result']['market_rate']  ?? null,
+                        'amount_token' => $result['result']['amount_token'] ?? null,
+                    ]),
+                ]);
+            }
+        } catch (\Throwable $e) {
+            Log::warning("FX margin record failed: " . $e->getMessage());
         }
     }
 
-    public function index(Request $request): JsonResponse
+    private function creditAtlasWallet(string $userId, string $network, string $token, string $amountToken): void
     {
-        $executions = RuleExecution::where('user_id', auth()->id())
-            ->with(['steps', 'rule' => fn($q) => $q->withTrashed()])
-            ->orderBy('started_at', 'desc')
-            ->paginate(20);
-
-        return response()->json([
-            'success' => true,
-            'data'    => $executions->through(fn($e) => $this->formatExecution($e)),
-        ]);
+        try {
+            $wallet = AtlasWallet::firstOrNew(['user_id' => $userId, 'network' => $network, 'token' => $token]);
+            if (!$wallet->address) $wallet->address = AtlasWallet::generateAddress($network);
+            $wallet->balance          = bcadd((string)($wallet->balance         ?? '0'), $amountToken, 8);
+            $wallet->total_deposited  = bcadd((string)($wallet->total_deposited ?? '0'), $amountToken, 8);
+            $wallet->last_activity_at = now();
+            $wallet->save();
+        } catch (\Throwable $e) {
+            Log::warning("Atlas wallet credit failed: " . $e->getMessage());
+        }
     }
 
-    public function show(string $id): JsonResponse
+    private function resolveMovementAmount(Rule $rule, ConnectedAccount $account): string
     {
-        $execution = RuleExecution::where('user_id', auth()->id())
-            ->with(['steps', 'rule' => fn($q) => $q->withTrashed()])
-            ->findOrFail($id);
-
-        return response()->json([
-            'success' => true,
-            'data'    => $this->formatExecution($execution),
-        ]);
-    }
-
-    public function ledger(Request $request): JsonResponse
-    {
-        $ledgerService = app(\App\Services\LedgerService::class);
-        return response()->json([
-            'success' => true,
-            'data'    => $ledgerService->history(auth()->id()),
-        ]);
-    }
-
-    // ── Helpers ───────────────────────────────────────────────────────────────
-
-    private function resolveMovementAmount(Rule $rule): string
-    {
-        $account = $rule->connectedAccount;
         return match ($rule->total_amount_type) {
             'fixed'        => (string) $rule->total_amount,
             'full_balance' => (string) $account->balance,
             'percentage'   => bcdiv(bcmul((string)$account->balance, (string)$rule->total_amount, 10), '100', 6),
-            default        => '0',
+            default        => throw new \RuntimeException('Unknown amount type: ' . $rule->total_amount_type),
         };
     }
 
-    private function formatExecution(RuleExecution $e): array
+    private function resolveAdapter(string $actionType): mixed
     {
-        return [
-            'id'                 => $e->id,
-            'rule_name'          => $e->rule?->name ?? $e->rule_snapshot['name'] ?? 'Unknown',
-            'status'             => $e->status,
-            'triggered_by'       => $e->triggered_by,
-            'total_amount'       => '₦' . number_format((float) $e->total_amount_ngn, 2),
-            'service_charge'     => '₦' . number_format((float) $e->service_charge_ngn, 2),
-            'total_debited'      => '₦' . number_format((float) $e->total_debit_ngn, 2),
-            'steps_count'        => $e->steps->count(),
-            'executed_at'        => $e->started_at,
-            'completed_at'       => $e->completed_at,
-            'error_message'      => $e->error_message,
-            'steps'              => $e->steps->map(fn($s) => $this->formatStep($s)),
-        ];
-    }
-
-    private function formatStep(\App\Models\ExecutionStep $s): array
-    {
-        $result  = is_array($s->result) ? $s->result : (json_decode($s->result, true) ?? []);
-        $isCrypto = $s->action_type === 'convert_crypto';
-
-        return [
-            'step'           => $s->step_order,
-            'label'          => $s->label,
-            'action_type'    => $s->action_type,
-            'amount'         => '₦' . number_format((float)$s->amount_ngn, 2),
-            'amount_token'   => $isCrypto ? ($result['amount_token'] ?? null) : null,
-            'token'          => $isCrypto ? ($result['token'] ?? null) : null,
-            'network'        => $isCrypto ? ($result['network'] ?? null) : null,
-            'status'         => $s->status,
-            'rail_reference' => $s->rail_reference,
-            'error_message'  => $s->error_message,
-            'completed_at'   => $s->completed_at,
-        ];
+        return match ($actionType) {
+            'send_bank'      => new FiatRail($this->encryption),
+            'save_piggyvest' => new PiggyVestRail(),
+            'save_cowrywise' => new CowrywiseRail(),
+            'convert_crypto' => new CryptoRail(),
+            'pay_bill'       => new BillRail(),
+            default          => throw new \RuntimeException("No adapter for: {$actionType}"),
+        };
     }
 }
