@@ -509,7 +509,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
           <thead>
             <tr>
               <th>Receipt No.</th><th>Rule</th><th>Amount</th>
-              <th>Fees Paid</th><th>Status</th><th>Date</th><th></th>
+              <th>Status</th><th>Date</th><th></th>
             </tr>
           </thead>
           <tbody id="receipts-body"></tbody>
@@ -997,7 +997,6 @@ async function loadReceipts() {
         <td><span style="font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:600">${r.receipt_number}</span></td>
         <td style="font-size:13.5px">${r.rule_name || '—'}</td>
         <td style="font-family:var(--mono);font-size:13px;font-weight:500">${r.total_amount}</td>
-        <td style="font-family:var(--mono);font-size:13px;color:var(--orange)">${r.total_fees}</td>
         <td><span class="badge ${r.status === 'completed' ? 'badge-green' : 'badge-red'}">${r.status}</span></td>
         <td style="color:var(--text3);font-size:12.5px">${formatDate(r.created_at)}</td>
         <td><button class="receipt-view-btn" onclick="viewReceipt('${r.execution_id}')"><i data-lucide="external-link" style="width:12px;height:12px"></i> View</button></td>
